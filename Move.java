@@ -433,13 +433,13 @@ public class Move {
 								catch (IndexOutOfBoundsException e) {}
 							}
 						}
-						if (Chess.whiteCastleKing && Chess.board[5][b] == 0 && Chess.board[6][b] == 0)
+						if (Chess.whiteCastleKing && Chess.board[5][b] == 0 && Chess.board[6][b] == 0 && turn)
 							Chess.legalMoves.add(new Move (a,b,6,b));
-						if (Chess.whiteCastleQueen && Chess.board[3][b] == 0 && Chess.board[2][b] == 0 && Chess.board[1][b] == 0)
+						if (Chess.whiteCastleQueen && Chess.board[3][b] == 0 && Chess.board[2][b] == 0 && Chess.board[1][b] == 0 && turn)
 							Chess.legalMoves.add(new Move (a,b,2,b));
-						if (Chess.blackCastleKing && Chess.board[5][b] == 0 && Chess.board[6][b] == 0)
+						if (Chess.blackCastleKing && Chess.board[5][b] == 0 && Chess.board[6][b] == 0 && !turn)
 							Chess.legalMoves.add(new Move (a,b,6,b));
-						if (Chess.blackCastleQueen && Chess.board[3][b] == 0 && Chess.board[2][b] == 0 && Chess.board[1][b] == 0)
+						if (Chess.blackCastleQueen && Chess.board[3][b] == 0 && Chess.board[2][b] == 0 && Chess.board[1][b] == 0 && !turn)
 							Chess.legalMoves.add(new Move (a,b,2,b));
 					}
 				}
