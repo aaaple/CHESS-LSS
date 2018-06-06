@@ -13,7 +13,9 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferStrategy;
 import java.util.ArrayList;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 /*
@@ -43,7 +45,8 @@ public class Chess extends JPanel{
 	private static JFrame frame;
 
 	private static Move currentMove;
-	
+
+	static JButton moves;
 	/*
 	 * sets the board to starting position and
 	 * resets all the pieces to amount of starting pieces
@@ -107,22 +110,22 @@ public class Chess extends JPanel{
 				System.out.println(", " + movesPlayed.get(a).moveName);
 		System.out.println();
 	}
-	
+
 	public static void setGraphics () {
 		canvas.createBufferStrategy(3);
 		bufferStrat = canvas.getBufferStrategy();
 		g=bufferStrat.getDrawGraphics();
 	}
-	
+
 	/*
 	 * Draws the board
 	 * only prints to the console for now
 	 */
 	public static void drawBoard () {
-		
+
 		g.clearRect(0, 0, 800, 600);
 		g.drawImage(ChessLoadRes.back, 0, 0, frame);
-		
+
 		for (int a = 7; a >= 0; a--) {
 			for (int b = 7; b >= 0; b--) {
 				if (board[b][a] == 1)
@@ -173,25 +176,42 @@ public class Chess extends JPanel{
 				}
 			}
 			if (temp) {
-				showMoves();
+				if (board [startX][startY] == 6 && endX == 6 && whiteCastleKing) { // white castling kingside
+					board [5][0] = 4;
+					board [7][0] = 0;
+				}
+				else if (board [startX][startY] == 6 && endX == 2 && whiteCastleQueen) { // white castling queenside
+					board [3][0] = 4;
+					board [0][0] = 0;
+				}
 				if (board[startX][startY] == 4 && startX == 0) // this checks to see if a rook or king moved and if so, prevents castling
 					whiteCastleQueen = false;
 				else if (board[startX][startY] == 4 && startX == 7)
-					whiteCastleKing = false;
+					whiteCastleKing = false;	
 				else if (board[startX][startY] == 6) {
 					whiteCastleKing = false;
 					whiteCastleQueen = false;
 				}
-				if (board [startX][startY] == 6 && endX == 6) {
-					board [5][0] = 4;
-					board [7][0] = 0;
-				}
-				else if (board [startX][startY] == 6 && endX == 2) {
-					board [3][0] = 4;
-					board [0][0] = 0;
-				}
 				board[endX][endY] = board [startX][startY]; // moves pieces on the board
 				board [startX][startY] = 0;
+				if (endY == 7 && board[endX][endY] == 1) { // Pawn Promotion when pawn reaches end of the board
+					byte choice;
+					Object[] options1 = {	"Knight",
+											"Bishop",
+											"Rook",
+											"Queen"};
+
+					choice = (byte) JOptionPane.showOptionDialog(null,
+							null, 
+							"Promotion",
+							JOptionPane.YES_NO_CANCEL_OPTION,
+							JOptionPane.PLAIN_MESSAGE,
+							null,
+							options1,
+							null);
+					choice += 2;
+					board[endX][endY] = choice;
+				}
 				turn = false;
 				legalMoves.clear();
 			}
@@ -217,25 +237,42 @@ public class Chess extends JPanel{
 				}
 			}
 			if (temp) {
-				showMoves();
-				if (board[startX][startY] == -4 && startX == 0) // this checks to see if a rook or king moved and if so, prevents castling
-					whiteCastleQueen = false;
-				else if (board[startX][startY] == -4 && startX == 7)
-					whiteCastleKing = false;
-				else if (board[startX][startY] == -6) {
-					whiteCastleKing = false;
-					whiteCastleQueen = false;
-				}
-				if (board [startX][startY] == -6 && endX == 6) {
+				if (board [startX][startY] == -6 && endX == 6 && blackCastleKing) { // white castling kingside
 					board [5][7] = -4;
 					board [7][7] = 0;
 				}
-				else if (board [startX][startY] == -6 && endX == 2) {
+				else if (board [startX][startY] == -6 && endX == 2 && blackCastleQueen) { // white castling queenside
 					board [3][7] = -4;
 					board [0][7] = 0;
 				}
+				if (board[startX][startY] == -4 && startX == 0) // this checks to see if a rook or king moved and if so, prevents castling
+					blackCastleQueen = false;
+				else if (board[startX][startY] == -4 && startX == 7)
+					blackCastleKing = false;	
+				else if (board[startX][startY] == -6) {
+					blackCastleKing = false;
+					blackCastleQueen = false;
+				}
 				board[endX][endY] = board [startX][startY]; // moves pieces on the board
 				board [startX][startY] = 0;
+				if (endY == 0 && board[endX][endY] == -1) {
+					byte choice;
+					Object[] options1 = {	"Knight",
+											"Bishop",
+											"Rook",
+											"Queen"};
+
+					choice = (byte) JOptionPane.showOptionDialog(null,
+							null, 
+							"Promotion",
+							JOptionPane.YES_NO_CANCEL_OPTION,
+							JOptionPane.PLAIN_MESSAGE,
+							null,
+							options1,
+							null);
+					choice += 2;
+					board[endX][endY] = (byte) -choice;
+				}
 				turn = true;
 				legalMoves.clear();
 			}
@@ -272,12 +309,13 @@ public class Chess extends JPanel{
 			{
 				endX = e.getX()/50-1;
 				endY = 8-e.getY()/50;
-				if (startX >= 0 && startX <=8 && startY >= 0 && startY <=8 && endX >= 0 && endX <=8 && endY >= 0 && endY <=8) // checks to see if user clicked inside the board
+				if (startX >= 0 && startX <=8 && startY >= 0 && startY <=8 && endX >= 0 && endX <=8 && endY >= 0 && endY <=8) { // checks to see if user clicked inside the board
 					if (turn)
 						moveWhite();
 					else
 						moveBlack();
-				drawBoard();
+					drawBoard();
+				}
 			}
 		});
 	}
