@@ -2,7 +2,6 @@
  * This is the complete re-make of the original Chess class with a new design
  * The intent of this is to make further development more smooth
  */
-
 package ISU;
 
 import java.awt.Canvas;
@@ -18,6 +17,8 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import ICS4U1.src.SubMenu1;
+
 /*
  * main class, starts the GUI
  */
@@ -26,11 +27,8 @@ public class Chess extends JPanel{
 	 * 
 	 */
 	private static final long serialVersionUID = 6601046515365214157L;
-	/*
-	 * creates a 2d array to represent the board
-	 * the pieces are represented by numbers
-	 * pawns=1, knights=2, bishops=3, rook=4, queen=5, king=6, 0=unoccupied square negative values represent black
-	 */
+	// the board is kept in a 2d array, the pieces are represented by numbers
+	// pawns=1, knights=2, bishops=3, rook=4, queen=5, king=6, 0=unoccupied square negative values represent black
 	public static byte[][] board = new byte [8][8];
 	public static int startX, startY, endX, endY;
 	public static boolean turn = true, pvp = true, playerSide = true, win = false, whiteCastleKing = true, whiteCastleQueen = true, blackCastleKing = true, blackCastleQueen = true;
@@ -39,14 +37,12 @@ public class Chess extends JPanel{
 	public static ArrayList <Move> legalMoves = new ArrayList <Move> ();
 	public static ArrayList <Move> legalMovesNextPlayer = new ArrayList <Move> ();
 	public static ArrayList <Move> movesPlayed = new ArrayList <Move> ();
+	private static Move currentMove;
 	private static Canvas canvas;
 	private static Graphics g;
 	private static BufferStrategy bufferStrat;
 	private static JFrame frame;
 
-	private static Move currentMove;
-
-	static JButton moves;
 	/*
 	 * sets the board to starting position and
 	 * resets all the pieces to amount of starting pieces
@@ -60,6 +56,7 @@ public class Chess extends JPanel{
 		blackCastleQueen = true;
 		piecesW.clear();
 		piecesB.clear();
+		movesPlayed.clear();
 		for (int a = 0; a < 8; a ++)
 			for (int b = 0; b < 8; b ++)
 				board[b][a] = 0;
@@ -103,14 +100,15 @@ public class Chess extends JPanel{
 		piecesB.add(new Piece ((byte)-2));
 	}
 
-	// Formats the moves into chess into algebraic chess notation
-	public static void showMoves () {
+	// Formats the moves into chess into algebraic chess notation and returns as a string to print out
+	public static String showMoves () {
+		String s = "";
 		for (int a = 0; a < movesPlayed.size(); a++)
 			if (a%2==0)
-				System.out.print((a/2+1)+ ". " + movesPlayed.get(a).moveName);
+				s += ((a/2+1)+ ". " + movesPlayed.get(a).moveName);
 			else
-				System.out.println(", " + movesPlayed.get(a).moveName);
-		System.out.println();
+				s += (", " + movesPlayed.get(a).moveName+"\n");
+		return s;
 	}
 
 	public static void setGraphics () {
@@ -121,58 +119,46 @@ public class Chess extends JPanel{
 
 	/*
 	 * Draws the board
-	 * only prints to the console for now
+	 * Draws images of each piece based on where it is on the board
 	 */
 	public static void drawBoard () {
-
 		g.clearRect(0, 0, 800, 600);
 		g.drawImage(ChessLoadRes.back, 0, 0, frame);
-
 		for (int a = 7; a >= 0; a--) {
 			for (int b = 7; b >= 0; b--) {
-				if (board[b][a] == 1)
-					g.drawImage(ChessLoadRes.wp, b*50+50, 350-a*50+50, frame);
-				else if (board[b][a] == 2)
-					g.drawImage(ChessLoadRes.wn, b*50+50, 350-a*50+50, frame);
-				else if (board[b][a] == 3)
-					g.drawImage(ChessLoadRes.wb, b*50+50, 350-a*50+50, frame);
-				else if (board[b][a] == 4)
-					g.drawImage(ChessLoadRes.wr, b*50+50, 350-a*50+50, frame);
-				else if (board[b][a] == 5)
-					g.drawImage(ChessLoadRes.wq, b*50+50, 350-a*50+50, frame);
-				else if (board[b][a] == 6)
-					g.drawImage(ChessLoadRes.wk, b*50+50, 350-a*50+50, frame);
-				else if (board[b][a] == -1)
-					g.drawImage(ChessLoadRes.bp, b*50+50, 350-a*50+50, frame);
-				else if (board[b][a] == -2)
-					g.drawImage(ChessLoadRes.bn, b*50+50, 350-a*50+50, frame);
-				else if (board[b][a] == -3)
-					g.drawImage(ChessLoadRes.bb, b*50+50, 350-a*50+50, frame);
-				else if (board[b][a] == -4)
-					g.drawImage(ChessLoadRes.br, b*50+50, 350-a*50+50, frame);
-				else if (board[b][a] == -5)
-					g.drawImage(ChessLoadRes.bq, b*50+50, 350-a*50+50, frame);
-				else if (board[b][a] == -6)
-					g.drawImage(ChessLoadRes.bk, b*50+50, 350-a*50+50, frame);
+				if (board[b][a] == 1)		g.drawImage(ChessLoadRes.wp, b*50+50, 350-a*50+50, frame);
+				else if (board[b][a] == 2)	g.drawImage(ChessLoadRes.wn, b*50+50, 350-a*50+50, frame);
+				else if (board[b][a] == 3)	g.drawImage(ChessLoadRes.wb, b*50+50, 350-a*50+50, frame);
+				else if (board[b][a] == 4)	g.drawImage(ChessLoadRes.wr, b*50+50, 350-a*50+50, frame);
+				else if (board[b][a] == 5)	g.drawImage(ChessLoadRes.wq, b*50+50, 350-a*50+50, frame);
+				else if (board[b][a] == 6)	g.drawImage(ChessLoadRes.wk, b*50+50, 350-a*50+50, frame);
+				else if (board[b][a] == -1)	g.drawImage(ChessLoadRes.bp, b*50+50, 350-a*50+50, frame);
+				else if (board[b][a] == -2)	g.drawImage(ChessLoadRes.bn, b*50+50, 350-a*50+50, frame);
+				else if (board[b][a] == -3)	g.drawImage(ChessLoadRes.bb, b*50+50, 350-a*50+50, frame);
+				else if (board[b][a] == -4)	g.drawImage(ChessLoadRes.br, b*50+50, 350-a*50+50, frame);
+				else if (board[b][a] == -5)	g.drawImage(ChessLoadRes.bq, b*50+50, 350-a*50+50, frame);
+				else if (board[b][a] == -6)	g.drawImage(ChessLoadRes.bk, b*50+50, 350-a*50+50, frame);
 			}
 		}
 		bufferStrat.show();
 	}
 
+	/*
+	 * Moves the pieces on the board
+	 * Adds the piece found in the starting cell to the ending cell and replaces the piece in starting cell with 0
+	 */
 	public static void makeMove (Move m) {
-		board[m.endX][m.endY] = board [m.startX][m.startY]; // moves pieces on the board
+		board[m.endX][m.endY] = board [m.startX][m.startY];
 		board [m.startX][m.startY] = 0;
 	}
 
-	/*
-	 * makes move for white
-	 */
+	// makes move for white
 	public static void moveWhite () {
 		legalMoves.clear();
 		legalMoves = Move.findLegalMoves (turn, board);
 		if (!playerSide && !pvp) { //engine moves
 			currentMove = Engine.generateMove(legalMoves);
-			System.out.println(currentMove);
+			makeMove (currentMove);
 			turn = false;
 		}
 		else { // player moves
@@ -198,10 +184,7 @@ public class Chess extends JPanel{
 				makeMove (currentMove);
 				if (endY == 7 && board[endX][endY] == 1) { // Pawn Promotion when pawn reaches end of the board
 					byte choice;
-					Object[] options1 = {	"Knight",
-							"Bishop",
-							"Rook",
-					"Queen"};
+					Object[] options1 = {"Knight", "Bishop", "Rook", "Queen"};
 					choice = (byte) JOptionPane.showOptionDialog(null,
 							null, 
 							"Promotion",
@@ -223,6 +206,7 @@ public class Chess extends JPanel{
 				}
 				legalMovesNextPlayer.clear();
 				legalMovesNextPlayer = Move.findLegalMoves(!turn, board);
+				checkForMate();
 				temp = false;
 				for (int a = 0; a < piecesB.size(); a ++)
 					if (piecesB.get(a).name == -6)
@@ -237,9 +221,7 @@ public class Chess extends JPanel{
 		}
 	}
 
-	/*
-	 * makes move for black
-	 */
+	// makes move for black
 	public static void moveBlack () {
 		legalMoves.clear();
 		legalMoves = Move.findLegalMoves (turn, board);
@@ -272,10 +254,7 @@ public class Chess extends JPanel{
 				board [startX][startY] = 0;
 				if (endY == 0 && board[endX][endY] == -1) {
 					byte choice;
-					Object[] options1 = {	"Knight",
-							"Bishop",
-							"Rook",
-					"Queen"};
+					Object[] options1 = {"Knight", "Bishop", "Rook", "Queen"};
 					choice = (byte) JOptionPane.showOptionDialog(null,
 							null, 
 							"Promotion",
@@ -297,6 +276,7 @@ public class Chess extends JPanel{
 				}
 				legalMovesNextPlayer.clear();
 				legalMovesNextPlayer = Move.findLegalMoves(!turn, board);
+				checkForMate();
 				temp = false;
 				for (int a = 0; a < piecesW.size(); a ++)
 					if (piecesW.get(a).name == 6)
@@ -311,6 +291,10 @@ public class Chess extends JPanel{
 		}
 	}
 
+	/*
+	 * checks every turn to see if castling is still allowed
+	 * moves rook if castling is detected
+	 */
 	public static void castle (byte[][] board, Move currentMove) {
 		if (turn) {
 			if (board [currentMove.startX][currentMove.startY] == 6 && currentMove.endX == 6 && whiteCastleKing) { // white castling kingside
@@ -351,6 +335,90 @@ public class Chess extends JPanel{
 
 	}
 
+	public static boolean checkForMate () {
+		//		boolean[][] kingMoves = new boolean[3][3];
+		//		legalMoves = Move.findLegalMoves(turn, board);
+		//		for (int a = 0; a < legalMoves.size(); a++) {
+		//			if ((board[legalMoves.get(a).endX][legalMoves.get(a).endY] == -6 && turn) || (board[legalMoves.get(a).endX][legalMoves.get(a).endY] == 6 && !turn))
+		//				if
+		//		}
+		//		kingMoves.
+		return false;
+	}
+
+
+	public Chess () {
+		drawBoard();
+		canvas.addMouseListener(new MouseAdapter() {
+			public void mousePressed(MouseEvent e) {
+				startX = e.getX()/50-1;
+				startY =  8-e.getY()/50;
+				if (e.getX() > 575 && e.getX() < 695 && e.getY() > 55 && e.getY() < 95)
+					JOptionPane.showMessageDialog(Chess.frame, showMoves());
+				else if (e.getX() > 575 && e.getX() < 695 && e.getY() > 155 && e.getY() < 195)
+					if (JOptionPane.showConfirmDialog(Chess.frame, "Are you sure you want to resign?") == 0) {
+						if (turn)	JOptionPane.showMessageDialog(Chess.frame, "Black has won. 0-1");
+						else		JOptionPane.showMessageDialog(Chess.frame, "White has won. 1-0");
+						setBoard ();
+						drawBoard ();
+						settings ();
+					}
+			}
+			public void mouseReleased(MouseEvent e) {
+				endX = e.getX()/50-1;
+				endY = 8-e.getY()/50;
+				if (startX >= 0 && startX <=8 && startY >= 0 && startY <=8 && endX >= 0 && endX <=8 && endY >= 0 && endY <=8) { // checks to see if user clicked inside the board
+					if (!pvp && playerSide)	moveWhite ();
+					else if (!playerSide)	moveBlack ();
+					else
+						if (turn)	moveWhite();
+						else		moveBlack();
+					drawBoard();
+					if (win) {
+						if (!turn)		JOptionPane.showMessageDialog(Chess.frame, "White has won. 1-0");
+						else if (turn)	JOptionPane.showMessageDialog(Chess.frame, "Black has won. 0-1");
+						setBoard ();
+						drawBoard ();
+						settings ();
+					}
+				}
+			}
+		});
+	}
+
+	public static void settings () {
+		byte choice;
+		Object[] options1 = {"vs human","vs computer"};
+		choice = (byte) JOptionPane.showOptionDialog(null,
+				null, 
+				"",
+				JOptionPane.YES_NO_CANCEL_OPTION,
+				JOptionPane.PLAIN_MESSAGE,
+				null,
+				options1,
+				null);
+		if (choice == 0)
+			pvp = true;
+		else {
+			pvp = false;
+			options1[0] = "White";
+			options1[1] = "Black";
+			choice = (byte) JOptionPane.showOptionDialog(null,
+					null, 
+					"Choose your side",
+					JOptionPane.YES_NO_CANCEL_OPTION,
+					JOptionPane.PLAIN_MESSAGE,
+					null,
+					options1,
+					null);
+			if (choice == 0)
+				playerSide = true;
+			else
+				playerSide = false;
+		}
+
+	}
+
 	/*
 	 * Main class
 	 * initializes the JFrame and Graphics and implements a mouse action listener to detect when a player makes a move
@@ -363,48 +431,12 @@ public class Chess extends JPanel{
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(new Dimension(800,600));
 		frame.setLocationRelativeTo(null);
-		canvas.setPreferredSize(new Dimension(800,600));
-		canvas.setFocusable(false);
 		frame.add(canvas);
 		frame.setVisible(true);
 		frame.pack();
-
 		setGraphics();
-		drawBoard();
-
-		canvas.addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent e) {
-				startX = e.getX()/50-1;
-				startY =  8-e.getY()/50;
-			}
-			public void mouseReleased(MouseEvent e)
-			{
-				endX = e.getX()/50-1;
-				endY = 8-e.getY()/50;
-				if (startX >= 0 && startX <=8 && startY >= 0 && startY <=8 && endX >= 0 && endX <=8 && endY >= 0 && endY <=8) { // checks to see if user clicked inside the board
-					if (!pvp && playerSide) {
-						moveWhite ();
-					}
-					else if (!playerSide)
-						moveBlack ();
-					else {
-						if (turn)
-							moveWhite();
-						else
-							moveBlack();
-					}
-					drawBoard();
-					if (win) {
-						if (!turn)
-							JOptionPane.showMessageDialog(Chess.frame, "Black has lost.");
-						else if (turn)
-							JOptionPane.showMessageDialog(Chess.frame, "White has lost.");
-						setBoard ();
-						drawBoard ();
-					}
-				}
-			}
-		});
+		settings();
+		bufferStrat.show();
+		new Chess();
 	}
-
 }
