@@ -13,7 +13,8 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferStrategy;
 import java.util.ArrayList;
 import java.util.Collections;
-
+import java.util.Timer;
+import java.util.TimerTask;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -26,16 +27,42 @@ public class Chess extends JPanel{
 	public static byte[][] board = new byte [8][8];
 	public static int startX, startY, endX, endY;
 	public static boolean turn = true, pvp = true, playerSide = true, win = false, whiteCastleKing = true, whiteCastleQueen = true, blackCastleKing = true, blackCastleQueen = true;
-	public static ArrayList <Piece> piecesB = new ArrayList <Piece> ();
-	public static ArrayList <Piece> piecesW = new ArrayList <Piece> ();
-	public static ArrayList <Move> legalMoves = new ArrayList <Move> ();
-	public static ArrayList <Move> legalMovesNextPlayer = new ArrayList <Move> ();
-	public static ArrayList <Move> movesPlayed = new ArrayList <Move> ();
+	public static ArrayList <Piece> piecesB = new ArrayList <Piece> (), piecesW = new ArrayList <Piece> (), piecesCapturedW = new ArrayList <Piece> (), piecesCapturedB = new ArrayList <Piece> ();
+	public static ArrayList <Move> legalMoves = new ArrayList <Move> (), legalMovesNextPlayer = new ArrayList <Move> (), movesPlayed = new ArrayList <Move> ();
 	private static Move currentMove;
 	private static Canvas canvas;
 	private static Graphics g;
 	private static BufferStrategy bufferStrat;
 	private static JFrame frame;
+	private static int whiteT, blackT;
+
+	public static void timer () {
+		final Timer timer = new Timer();
+		timer.scheduleAtFixedRate(new TimerTask() {
+			String s;
+			public void run() {
+				if (turn == true) {
+					if (whiteT > 100) {
+						s = Integer.toString(whiteT/10);
+						g.drawString(s, 500, 80);
+					}
+					else {
+						s = Double.toString((double) whiteT/10);
+					}
+					whiteT--;
+				}
+				else if (turn == false) {
+					if (blackT > 100) {
+						s = Integer.toString(blackT/10);
+					}
+					else {
+						s = Double.toString((double) blackT/10);
+					}
+					blackT--;
+				}
+			}
+		}, 0, 100);
+	}
 
 	/*
 	 * sets the board to starting position and
@@ -44,13 +71,17 @@ public class Chess extends JPanel{
 	public static void setBoard () {
 		win = false;
 		turn = true;
-		whiteCastleKing = true;
-		whiteCastleQueen = true;
-		blackCastleKing = true;
-		blackCastleQueen = true;
+		whiteCastleKing = false;
+		whiteCastleQueen = false;
+		blackCastleKing = false;
+		blackCastleQueen = false;
 		piecesW.clear();
 		piecesB.clear();
+		piecesCapturedW.clear();
+		piecesCapturedB.clear();
 		movesPlayed.clear();
+		whiteT = 1800;
+		blackT = 1800;
 		for (int a = 0; a < 8; a ++)
 			for (int b = 0; b < 8; b ++)
 				board[b][a] = 0;
@@ -100,10 +131,8 @@ public class Chess extends JPanel{
 	public static String showMoves () {
 		String s = "";
 		for (int a = 0; a < movesPlayed.size(); a++)
-			if (a%2==0)
-				s += ((a/2+1)+ ". " + movesPlayed.get(a).moveName);
-			else
-				s += (", " + movesPlayed.get(a).moveName+"\n");
+			if (a%2==0)	s += ((a/2+1)+ ". " + movesPlayed.get(a).moveName);
+			else		s += (", " + movesPlayed.get(a).moveName+"\n");
 		return s;
 	}
 
@@ -121,8 +150,8 @@ public class Chess extends JPanel{
 	public static void drawBoard () {
 		g.clearRect(0, 0, 800, 600);
 		g.drawImage(ChessLoadRes.back, 0, 0, frame);
-		for (int a = 7; a >= 0; a--) {
-			for (int b = 7; b >= 0; b--) {
+		for (int a = 7; a >= 0; a--)
+			for (int b = 7; b >= 0; b--)
 				if (board[b][a] == 1)		g.drawImage(ChessLoadRes.wp, b*50+50, 350-a*50+50, frame);
 				else if (board[b][a] == 2)	g.drawImage(ChessLoadRes.wn, b*50+50, 350-a*50+50, frame);
 				else if (board[b][a] == 3)	g.drawImage(ChessLoadRes.wb, b*50+50, 350-a*50+50, frame);
@@ -135,35 +164,31 @@ public class Chess extends JPanel{
 				else if (board[b][a] == -4)	g.drawImage(ChessLoadRes.br, b*50+50, 350-a*50+50, frame);
 				else if (board[b][a] == -5)	g.drawImage(ChessLoadRes.bq, b*50+50, 350-a*50+50, frame);
 				else if (board[b][a] == -6)	g.drawImage(ChessLoadRes.bk, b*50+50, 350-a*50+50, frame);
-			}
-		}
-		ArrayList <Piece> p1 = piecesW;
-		ArrayList <Piece> p2 = piecesB;
-		p1.removeAll(piecesB);
-		p2.removeAll(piecesW);
+		Collections.sort(piecesCapturedW, new SortPieceValue());
+		Collections.sort(piecesCapturedB, new SortPieceValue());
 		int balance = 0;
-		for (int a = 0; a < p1.size(); a ++) {
-			if		(p1.get(a).name == 6)	g.drawImage(ChessLoadRes.silk, a*25+25, 475, frame);
-			else if	(p1.get(a).name == 5)	g.drawImage(ChessLoadRes.silq, a*25+25, 475, frame);
-			else if	(p1.get(a).name == 4)	g.drawImage(ChessLoadRes.silr, a*25+25, 475, frame);
-			else if	(p1.get(a).name == 3)	g.drawImage(ChessLoadRes.silb, a*25+25, 475, frame);
-			else if	(p1.get(a).name == 2)	g.drawImage(ChessLoadRes.siln, a*25+25, 475, frame);
-			else if	(p1.get(a).name == 1)	g.drawImage(ChessLoadRes.silp, a*25+25, 475, frame);
-			balance += (p1.get(a).value/100);
+		for (int a = 0; a < piecesCapturedW.size(); a ++) {
+			if		(piecesCapturedW.get(a).name == 6)	g.drawImage(ChessLoadRes.silk, a*25+25, 475, frame);
+			else if	(piecesCapturedW.get(a).name == 5)	g.drawImage(ChessLoadRes.silq, a*25+25, 475, frame);
+			else if	(piecesCapturedW.get(a).name == 4)	g.drawImage(ChessLoadRes.silr, a*25+25, 475, frame);
+			else if	(piecesCapturedW.get(a).name == 3)	g.drawImage(ChessLoadRes.silb, a*25+25, 475, frame);
+			else if	(piecesCapturedW.get(a).name == 2)	g.drawImage(ChessLoadRes.siln, a*25+25, 475, frame);
+			else if	(piecesCapturedW.get(a).name == 1)	g.drawImage(ChessLoadRes.silp, a*25+25, 475, frame);
+			balance -= (piecesCapturedW.get(a).value/100);
 		}
 		System.out.println();
-		for (int a = 0; a < piecesB.size(); a ++) {
-			if		(p2.get(a).name == -6)	g.drawImage(ChessLoadRes.silk, a*25+25, 505, frame);
-			else if	(p2.get(a).name == -5)	g.drawImage(ChessLoadRes.silq, a*25+25, 505, frame);
-			else if	(p2.get(a).name == -4)	g.drawImage(ChessLoadRes.silr, a*25+25, 505, frame);
-			else if	(p2.get(a).name == -3)	g.drawImage(ChessLoadRes.silb, a*25+25, 505, frame);
-			else if	(p2.get(a).name == -2)	g.drawImage(ChessLoadRes.siln, a*25+25, 505, frame);
-			else if	(p2.get(a).name == -1)	g.drawImage(ChessLoadRes.silp, a*25+25, 505, frame);
-			balance += (p2.get(a).value/100);
+		for (int a = 0; a < piecesCapturedB.size(); a ++) {
+			if		(piecesCapturedB.get(a).name == -6)	g.drawImage(ChessLoadRes.silk, a*25+25, 505, frame);
+			else if	(piecesCapturedB.get(a).name == -5)	g.drawImage(ChessLoadRes.silq, a*25+25, 505, frame);
+			else if	(piecesCapturedB.get(a).name == -4)	g.drawImage(ChessLoadRes.silr, a*25+25, 505, frame);
+			else if	(piecesCapturedB.get(a).name == -3)	g.drawImage(ChessLoadRes.silb, a*25+25, 505, frame);
+			else if	(piecesCapturedB.get(a).name == -2)	g.drawImage(ChessLoadRes.siln, a*25+25, 505, frame);
+			else if	(piecesCapturedB.get(a).name == -1)	g.drawImage(ChessLoadRes.silp, a*25+25, 505, frame);
+			balance -= (piecesCapturedB.get(a).value/100);
 		}
 		String s = "";
 		if (balance > 0) s = "+";
-		g.drawString(s + Integer.toString(balance), Math.max(piecesB.size(), piecesW.size()) * 25 + 40, 510);
+		g.drawString(s + Integer.toString(balance), Math.max(piecesCapturedB.size(), piecesCapturedW.size()) * 25 + 40, 510);
 		bufferStrat.show();
 	}
 
@@ -182,29 +207,34 @@ public class Chess extends JPanel{
 		legalMoves = Move.findLegalMoves (turn, board);
 		if (!playerSide && !pvp) { // if engine moves
 			currentMove = Engine.generateMove(legalMoves);
+			castle(board, currentMove);
 			makeMove (currentMove);
+			boolean temp = false;
+			for (int a = 0; a < piecesB.size(); a ++)
+				if (piecesB.get(a).name == -6)
+					temp = true;
+			if (!temp)
+				win = true;
 			turn = false;
 		}
 		else { // if player moves
 			boolean temp = false;
 			currentMove = new Move(startX, startY, endX, endY);
-			for (int a = 0; a <legalMoves.size(); a++) {
+			for (int a = 0; a <legalMoves.size(); a++)
 				if (legalMoves.get(a).equals(currentMove)) {
 					temp = true; // checks to see if move is legal
 					movesPlayed.add(legalMoves.get(a));
 					break;
 				}
-			}
 			if (temp) {
 				castle(board, currentMove);
-				if (board[endX][endY] < 0) {
-					for (int a = 0; a < piecesB.size(); a ++) { // checks to see if a piece is captured and removes it from ArrayList
+				if (board[endX][endY] < 0)
+					for (int a = 0; a < piecesB.size(); a ++) // checks to see if a piece is captured and removes it from ArrayList
 						if (piecesB.get(a).name == board[endX][endY]) {
 							piecesB.remove(a);
+							piecesCapturedB.add(new Piece (board[endX][endY]));
 							break;
 						}
-					}
-				}
 				makeMove (currentMove);
 				if (endY == 7 && board[endX][endY] == 1) { // Pawn Promotion when pawn reaches end of the board
 					byte choice;
@@ -252,29 +282,35 @@ public class Chess extends JPanel{
 		legalMoves = Move.findLegalMoves (turn, board);
 		if (playerSide && !pvp) { // if engine moves
 			currentMove = Engine.generateMove(legalMoves);
+			castle(board, currentMove);
 			makeMove (currentMove);
+			boolean temp = false;
+			for (int a = 0; a < piecesW.size(); a ++) {
+				if (piecesW.get(a).name == 6)
+					temp = true;
+			}
+			if (!temp)
+				win = true;
 			turn = true;
 		}
 		else { // if player moves
 			boolean temp = false;
 			currentMove = new Move(startX, startY, endX, endY);
-			for (int a = 0; a <legalMoves.size(); a++) {
+			for (int a = 0; a <legalMoves.size(); a++)
 				if (legalMoves.get(a).equals(currentMove)) {
 					temp = true; // checks to see if move is legal
 					movesPlayed.add(legalMoves.get(a));
 					break;
 				}
-			}
 			if (temp) {
 				castle(board, currentMove);
-				if (board[endX][endY] > 0) {
-					for (int a = 0; a < piecesB.size(); a ++) { // checks to see if a piece is captured and removes it from ArrayList
+				if (board[endX][endY] > 0)
+					for (int a = 0; a < piecesB.size(); a ++) // checks to see if a piece is captured and removes it from ArrayList
 						if (piecesW.get(a).name == board[endX][endY]) {
 							piecesW.remove(a);
+							piecesCapturedW.add(new Piece (board[endX][endY]));
 							break;
 						}
-					}
-				}
 				board[endX][endY] = board [startX][startY]; // moves pieces on the board
 				board [startX][startY] = 0;
 				if (endY == 0 && board[endX][endY] == -1) {
@@ -375,13 +411,14 @@ public class Chess extends JPanel{
 
 	public Chess () {
 		drawBoard();
+		timer();
 		canvas.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
 				startX = e.getX()/50-1;
 				startY =  8-e.getY()/50;
-				if (e.getX() > 575 && e.getX() < 695 && e.getY() > 55 && e.getY() < 95)
+				if (e.getX() > 650 && e.getX() < 770 && e.getY() > 55 && e.getY() < 95)
 					JOptionPane.showMessageDialog(Chess.frame, showMoves());
-				else if (e.getX() > 575 && e.getX() < 695 && e.getY() > 155 && e.getY() < 195) {
+				else if (e.getX() > 650 && e.getX() < 770 && e.getY() > 155 && e.getY() < 195) {
 					if (JOptionPane.showConfirmDialog(Chess.frame, "Are you sure you want to resign?") == 0) {
 						if (turn)	JOptionPane.showMessageDialog(Chess.frame, "Black has won. 0-1");
 						else		JOptionPane.showMessageDialog(Chess.frame, "White has won. 1-0");
@@ -390,7 +427,7 @@ public class Chess extends JPanel{
 						settings ();
 					}
 				}
-				else if (e.getX() > 575 && e.getX() < 695 && e.getY() > 405 && e.getY() < 445)
+				else if (e.getX() > 650 && e.getX() < 770 && e.getY() > 405 && e.getY() < 445)
 					if (JOptionPane.showConfirmDialog(Chess.frame, "Are you sure you want to Exit?") == 0) frame.dispose();
 			}
 			public void mouseReleased(MouseEvent e) {
