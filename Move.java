@@ -1,86 +1,90 @@
 package ISU;
 
-public class Move {
+import java.util.ArrayList;
 
+public class Move {
+	
+	public boolean pawnCapture;
 	public int startX, startY, endX, endY;
 	public byte piece;
 	public String moveName;
 
-	public static void findLegalMoves (boolean turn) {
+	public static ArrayList<Move> findLegalMoves (boolean turn, byte [][] board) {
+		ArrayList <Move> legalMoves = new ArrayList <Move> ();
 		for (int a = 0; a < 8; a ++) {
 			for (int b = 0; b < 8; b++) {
 				if (true) {
 					//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-					if (Chess.board[a][b] == 1 && turn) { // Checking pawn moves (white)--------------------------------------------------------------------------------------------------------------------------
+					if (board[a][b] == 1 && turn) { // Checking pawn moves (white)--------------------------------------------------------------------------------------------------------------------------
 						if (b == 1) {
-							if (Chess.board[a][b+1] == 0) {
-								Chess.legalMoves.add(new Move (a,b,a,b+1));
-								if (Chess.board[a][b+2] == 0)
-									Chess.legalMoves.add(new Move (a,b,a,b+2));
+							if (board[a][b+1] == 0) {
+								legalMoves.add(new Move (a,b,a,b+1));
+								if (board[a][b+2] == 0)
+									legalMoves.add(new Move (a,b,a,b+2));
 							}
 						}
 						else {
-							if (Chess.board[a][b+1] == 0)
-								Chess.legalMoves.add(new Move (a,b,a,b+1));
+							if (board[a][b+1] == 0)
+								legalMoves.add(new Move (a,b,a,b+1));
 						}
-						try { if (Chess.board[a+1][b+1] < 0)Chess.legalMoves.add(new Move (a,b,a+1,b+1));}
+						try { if (board[a+1][b+1] < 0)legalMoves.add(new Move (a,b,a+1,b+1,true));}
 						catch (IndexOutOfBoundsException e) {}
-						try { if (Chess.board[a-1][b+1] < 0)Chess.legalMoves.add(new Move (a,b,a-1,b+1));}
+						try { if (board[a-1][b+1] < 0)legalMoves.add(new Move (a,b,a-1,b+1,true));}
 						catch (IndexOutOfBoundsException e) {}
 					} //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-					if (Chess.board[a][b] == -1 && !turn) { // Checking pawn moves (black)------------------------------------------------------------------------------------------------------------------------
+					if (board[a][b] == -1 && !turn) { // Checking pawn moves (black)------------------------------------------------------------------------------------------------------------------------
 						if (b == 6) {
-							if (Chess.board[a][b-1] == 0) {
-								Chess.legalMoves.add(new Move (a,b,a,b-1));
-								if (Chess.board[a][b-2] == 0)
-									Chess.legalMoves.add(new Move (a,b,a,b-2));
+							if (board[a][b-1] == 0) {
+								legalMoves.add(new Move (a,b,a,b-1));
+								if (board[a][b-2] == 0)
+									legalMoves.add(new Move (a,b,a,b-2));
 							}
 						}
 						else {
-							if (Chess.board[a][b-1] == 0)
-								Chess.legalMoves.add(new Move (a,b,a,b-1));
+							if (board[a][b-1] == 0)
+								legalMoves.add(new Move (a,b,a,b-1));
 						}
-						try { if (Chess.board[a+1][b-1] > 0)Chess.legalMoves.add(new Move (a,b,a+1,b-1));}
+						try { if (board[a+1][b-1] > 0)legalMoves.add(new Move (a,b,a+1,b-1,true));}
 						catch (IndexOutOfBoundsException e) {}
-						try { if (Chess.board[a-1][b-1] > 0)Chess.legalMoves.add(new Move (a,b,a-1,b-1));}
+						try { if (board[a-1][b-1] > 0)legalMoves.add(new Move (a,b,a-1,b-1,true));}
 						catch (IndexOutOfBoundsException e) {}
 					} //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-					else if (Math.abs(Chess.board[a][b]) == 2) { // Checking knight moves-------------------------------------------------------------------------------------------------------------------------
+					else if (Math.abs(board[a][b]) == 2) { // Checking knight moves-------------------------------------------------------------------------------------------------------------------------
 						// All 8 potential moves for a knight
-						try { if ((Chess.board[a+1][b+2] <= 0 && turn && Chess.board[a][b] > 0) || (Chess.board[a+1][b+2] >= 0 && !turn && Chess.board[a][b] < 0))	Chess.legalMoves.add(new Move (a,b,a+1,b+2));}
+						try { if ((board[a+1][b+2] <= 0 && turn && board[a][b] > 0) || (board[a+1][b+2] >= 0 && !turn && board[a][b] < 0))	legalMoves.add(new Move (a,b,a+1,b+2));}
 						catch (IndexOutOfBoundsException e) {}
-						try { if ((Chess.board[a+1][b-2] <= 0 && turn && Chess.board[a][b] > 0) || (Chess.board[a+1][b-2] >= 0 && !turn && Chess.board[a][b] < 0))	Chess.legalMoves.add(new Move (a,b,a+1,b-2));}
+						try { if ((board[a+1][b-2] <= 0 && turn && board[a][b] > 0) || (board[a+1][b-2] >= 0 && !turn && board[a][b] < 0))	legalMoves.add(new Move (a,b,a+1,b-2));}
 						catch (IndexOutOfBoundsException e) {}
-						try { if ((Chess.board[a-1][b+2] <= 0 && turn && Chess.board[a][b] > 0) || (Chess.board[a-1][b+2] >= 0 && !turn && Chess.board[a][b] < 0))	Chess.legalMoves.add(new Move (a,b,a-1,b+2));}
+						try { if ((board[a-1][b+2] <= 0 && turn && board[a][b] > 0) || (board[a-1][b+2] >= 0 && !turn && board[a][b] < 0))	legalMoves.add(new Move (a,b,a-1,b+2));}
 						catch (IndexOutOfBoundsException e) {}
-						try { if ((Chess.board[a-1][b-2] <= 0 && turn && Chess.board[a][b] > 0) || (Chess.board[a-1][b-2] >= 0 && !turn && Chess.board[a][b] < 0))	Chess.legalMoves.add(new Move (a,b,a-1,b-2));}
+						try { if ((board[a-1][b-2] <= 0 && turn && board[a][b] > 0) || (board[a-1][b-2] >= 0 && !turn && board[a][b] < 0))	legalMoves.add(new Move (a,b,a-1,b-2));}
 						catch (IndexOutOfBoundsException e) {}
-						try { if ((Chess.board[a+2][b+1] <= 0 && turn && Chess.board[a][b] > 0) || (Chess.board[a+2][b+1] >= 0 && !turn && Chess.board[a][b] < 0))	Chess.legalMoves.add(new Move (a,b,a+2,b+1));}
+						try { if ((board[a+2][b+1] <= 0 && turn && board[a][b] > 0) || (board[a+2][b+1] >= 0 && !turn && board[a][b] < 0))	legalMoves.add(new Move (a,b,a+2,b+1));}
 						catch (IndexOutOfBoundsException e) {}
-						try { if ((Chess.board[a+2][b-1] <= 0 && turn && Chess.board[a][b] > 0) || (Chess.board[a+2][b-1] >= 0 && !turn && Chess.board[a][b] < 0))	Chess.legalMoves.add(new Move (a,b,a+2,b-1));}
+						try { if ((board[a+2][b-1] <= 0 && turn && board[a][b] > 0) || (board[a+2][b-1] >= 0 && !turn && board[a][b] < 0))	legalMoves.add(new Move (a,b,a+2,b-1));}
 						catch (IndexOutOfBoundsException e) {}
-						try { if ((Chess.board[a-2][b+1] <= 0 && turn && Chess.board[a][b] > 0) || (Chess.board[a-2][b+1] >= 0 && !turn && Chess.board[a][b] < 0))	Chess.legalMoves.add(new Move (a,b,a-2,b+1));}
+						try { if ((board[a-2][b+1] <= 0 && turn && board[a][b] > 0) || (board[a-2][b+1] >= 0 && !turn && board[a][b] < 0))	legalMoves.add(new Move (a,b,a-2,b+1));}
 						catch (IndexOutOfBoundsException e) {}
-						try { if ((Chess.board[a-2][b-1] <= 0 && turn && Chess.board[a][b] > 0) || (Chess.board[a-2][b-1] >= 0 && !turn && Chess.board[a][b] < 0))	Chess.legalMoves.add(new Move (a,b,a-2,b-1));}
+						try { if ((board[a-2][b-1] <= 0 && turn && board[a][b] > 0) || (board[a-2][b-1] >= 0 && !turn && board[a][b] < 0))	legalMoves.add(new Move (a,b,a-2,b-1));}
 						catch (IndexOutOfBoundsException e) {}
 					} //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-					else if (Math.abs(Chess.board[a][b]) == 3) { // Checking bishop moves-------------------------------------------------------------------------------------------------------------------------
+					else if (Math.abs(board[a][b]) == 3) { // Checking bishop moves-------------------------------------------------------------------------------------------------------------------------
 						// This same check repeated 4 times for each direction
 						int countx = 0, county = 0;
 						while (true) { // Checking up/right diagonal
 							countx ++;
 							county ++;
 							try { // This is the algorithm for checking for moves in a direction other directions/rook checks/queen checks behave in similar ways
-								if ((Chess.board[a][b] > 0 && turn) || (Chess.board[a][b] < 0 && !turn)) {	 // Checks to see if the turn matches the side of the piece it is checking
-									if (Chess.board[a + countx][b + county] != 0) // Keeps checking as long as the square in front is empty
-										if ((Chess.board[a + countx][b + county] > 0 && Chess.board[a][b] > 0) || ((Chess.board[a + countx][b + county] < 0 && Chess.board[a][b] < 0)))
+								if ((board[a][b] > 0 && turn) || (board[a][b] < 0 && !turn)) {	 // Checks to see if the turn matches the side of the piece it is checking
+									if (board[a + countx][b + county] != 0) // Keeps checking as long as the square in front is empty
+										if ((board[a + countx][b + county] > 0 && board[a][b] > 0) || ((board[a + countx][b + county] < 0 && board[a][b] < 0)))
 											break; // Breaks if next square is occupied by same colour piece
 										else {
-											Chess.legalMoves.add(new Move (a,b,a + countx,b + county));
+											legalMoves.add(new Move (a,b,a + countx,b + county));
 											break; // Breaks if next square is occupied by diff colour piece but allows for capture
 										}
 									else
-										Chess.legalMoves.add(new Move (a,b,a + countx,b + county));
+										legalMoves.add(new Move (a,b,a + countx,b + county));
 								}
 								else break;
 							}
@@ -94,16 +98,16 @@ public class Move {
 							countx ++;
 							county --;
 							try {
-								if ((Chess.board[a][b] > 0 && turn) || (Chess.board[a][b] < 0 && !turn)) {
-									if (Chess.board[a + countx][b + county] != 0)
-										if ((Chess.board[a + countx][b + county] > 0 && Chess.board[a][b] > 0) || ((Chess.board[a + countx][b + county] < 0 && Chess.board[a][b] < 0)))
+								if ((board[a][b] > 0 && turn) || (board[a][b] < 0 && !turn)) {
+									if (board[a + countx][b + county] != 0)
+										if ((board[a + countx][b + county] > 0 && board[a][b] > 0) || ((board[a + countx][b + county] < 0 && board[a][b] < 0)))
 											break;
 										else {
-											Chess.legalMoves.add(new Move (a,b,a + countx,b + county));
+											legalMoves.add(new Move (a,b,a + countx,b + county));
 											break;
 										}
 									else
-										Chess.legalMoves.add(new Move (a,b,a + countx,b + county));
+										legalMoves.add(new Move (a,b,a + countx,b + county));
 								}
 								else break;
 							}
@@ -117,16 +121,16 @@ public class Move {
 							countx --;
 							county ++;
 							try {
-								if ((Chess.board[a][b] > 0 && turn) || (Chess.board[a][b] < 0 && !turn)) {	
-									if (Chess.board[a + countx][b + county] != 0)
-										if ((Chess.board[a + countx][b + county] > 0 && Chess.board[a][b] > 0) || ((Chess.board[a + countx][b + county] < 0 && Chess.board[a][b] < 0)))
+								if ((board[a][b] > 0 && turn) || (board[a][b] < 0 && !turn)) {	
+									if (board[a + countx][b + county] != 0)
+										if ((board[a + countx][b + county] > 0 && board[a][b] > 0) || ((board[a + countx][b + county] < 0 && board[a][b] < 0)))
 											break;
 										else {
-											Chess.legalMoves.add(new Move (a,b,a + countx,b + county));
+											legalMoves.add(new Move (a,b,a + countx,b + county));
 											break;
 										}
 									else
-										Chess.legalMoves.add(new Move (a,b,a + countx,b + county));
+										legalMoves.add(new Move (a,b,a + countx,b + county));
 								}
 								else break;
 							}
@@ -140,16 +144,16 @@ public class Move {
 							countx --;
 							county --;
 							try {
-								if ((Chess.board[a][b] > 0 && turn) || (Chess.board[a][b] < 0 && !turn)) {	
-									if (Chess.board[a + countx][b + county] != 0)
-										if ((Chess.board[a + countx][b + county] > 0 && Chess.board[a][b] > 0) || ((Chess.board[a + countx][b + county] < 0 && Chess.board[a][b] < 0)))
+								if ((board[a][b] > 0 && turn) || (board[a][b] < 0 && !turn)) {	
+									if (board[a + countx][b + county] != 0)
+										if ((board[a + countx][b + county] > 0 && board[a][b] > 0) || ((board[a + countx][b + county] < 0 && board[a][b] < 0)))
 											break;
 										else {
-											Chess.legalMoves.add(new Move (a,b,a + countx,b + county));
+											legalMoves.add(new Move (a,b,a + countx,b + county));
 											break;
 										}
 									else
-										Chess.legalMoves.add(new Move (a,b,a + countx,b + county));
+										legalMoves.add(new Move (a,b,a + countx,b + county));
 								}
 								else break;
 							}
@@ -158,22 +162,22 @@ public class Move {
 							}
 						}
 					} //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-					else if (Math.abs(Chess.board[a][b]) == 4) { // Checking rook moves-------------------------------------------------------------------------------------------------------------------------------------
+					else if (Math.abs(board[a][b]) == 4) { // Checking rook moves-------------------------------------------------------------------------------------------------------------------------------------
 						// see Bishop section for a description of the algorithm
 						int count = 0;
 						while (true) { // Checking right
 							count ++;
 							try {
-								if ((Chess.board[a][b] > 0 && turn) || (Chess.board[a][b] < 0 && !turn)) {	
-									if (Chess.board[a + count][b] != 0)
-										if ((Chess.board[a + count][b] > 0 && Chess.board[a][b] > 0) || ((Chess.board[a + count][b] < 0 && Chess.board[a][b] < 0)))
+								if ((board[a][b] > 0 && turn) || (board[a][b] < 0 && !turn)) {	
+									if (board[a + count][b] != 0)
+										if ((board[a + count][b] > 0 && board[a][b] > 0) || ((board[a + count][b] < 0 && board[a][b] < 0)))
 											break;
 										else {
-											Chess.legalMoves.add(new Move (a,b,a + count,b));
+											legalMoves.add(new Move (a,b,a + count,b));
 											break;
 										}
 									else
-										Chess.legalMoves.add(new Move (a,b,a + count,b));
+										legalMoves.add(new Move (a,b,a + count,b));
 								}
 								else break;
 							}
@@ -185,16 +189,16 @@ public class Move {
 						while (true) { // Checking left----------------------------------------------------------------------------------------------------------------------------
 							count --;
 							try {
-								if ((Chess.board[a][b] > 0 && turn) || (Chess.board[a][b] < 0 && !turn)) {	
-									if (Chess.board[a + count][b] != 0)
-										if ((Chess.board[a + count][b] > 0 && Chess.board[a][b] > 0) || ((Chess.board[a + count][b] < 0 && Chess.board[a][b] < 0)))
+								if ((board[a][b] > 0 && turn) || (board[a][b] < 0 && !turn)) {	
+									if (board[a + count][b] != 0)
+										if ((board[a + count][b] > 0 && board[a][b] > 0) || ((board[a + count][b] < 0 && board[a][b] < 0)))
 											break;
 										else {
-											Chess.legalMoves.add(new Move (a,b,a + count,b));
+											legalMoves.add(new Move (a,b,a + count,b));
 											break;
 										}
 									else
-										Chess.legalMoves.add(new Move (a,b,a + count,b));
+										legalMoves.add(new Move (a,b,a + count,b));
 								}
 								else break;
 							}
@@ -206,16 +210,16 @@ public class Move {
 						while (true) { // Checking up------------------------------------------------------------------------------------------------------------------------------
 							count ++;
 							try {
-								if ((Chess.board[a][b] > 0 && turn) || (Chess.board[a][b] < 0 && !turn)) {	
-									if (Chess.board[a][b + count] != 0)
-										if ((Chess.board[a][b + count] > 0 && Chess.board[a][b] > 0) || ((Chess.board[a][b + count] < 0 && Chess.board[a][b] < 0)))
+								if ((board[a][b] > 0 && turn) || (board[a][b] < 0 && !turn)) {	
+									if (board[a][b + count] != 0)
+										if ((board[a][b + count] > 0 && board[a][b] > 0) || ((board[a][b + count] < 0 && board[a][b] < 0)))
 											break;
 										else {
-											Chess.legalMoves.add(new Move (a,b,a,b + count));
+											legalMoves.add(new Move (a,b,a,b + count));
 											break;
 										}
 									else
-										Chess.legalMoves.add(new Move (a,b,a,b + count));
+										legalMoves.add(new Move (a,b,a,b + count));
 								}
 								else break;
 							}
@@ -227,16 +231,16 @@ public class Move {
 						while (true) { // Checking down----------------------------------------------------------------------------------------------------------------------------
 							count --;
 							try {
-								if ((Chess.board[a][b] > 0 && turn) || (Chess.board[a][b] < 0 && !turn)) {	
-									if (Chess.board[a][b + count] != 0)
-										if ((Chess.board[a][b + count] > 0 && Chess.board[a][b] > 0) || ((Chess.board[a][b + count] < 0 && Chess.board[a][b] < 0)))
+								if ((board[a][b] > 0 && turn) || (board[a][b] < 0 && !turn)) {	
+									if (board[a][b + count] != 0)
+										if ((board[a][b + count] > 0 && board[a][b] > 0) || ((board[a][b + count] < 0 && board[a][b] < 0)))
 											break;
 										else {
-											Chess.legalMoves.add(new Move (a,b,a,b + count));
+											legalMoves.add(new Move (a,b,a,b + count));
 											break;
 										}
 									else
-										Chess.legalMoves.add(new Move (a,b,a,b + count));
+										legalMoves.add(new Move (a,b,a,b + count));
 								}
 								else break;
 							}
@@ -245,23 +249,23 @@ public class Move {
 							}
 						}
 					} //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-					else if (Math.abs(Chess.board[a][b]) == 5) { // queens--------------------------------------------------------------------------------------------------------------------------------------------------
+					else if (Math.abs(board[a][b]) == 5) { // queens--------------------------------------------------------------------------------------------------------------------------------------------------
 						// see Bishop section for a description of the algorithm
 						int countx = 0, county = 0;
 						while (true) { // Checking up/right diagonal
 							countx ++;
 							county ++;
 							try {
-								if ((Chess.board[a][b] > 0 && turn) || (Chess.board[a][b] < 0 && !turn)) {
-									if (Chess.board[a + countx][b + county] != 0)
-										if ((Chess.board[a + countx][b + county] > 0 && Chess.board[a][b] > 0) || ((Chess.board[a + countx][b + county] < 0 && Chess.board[a][b] < 0)))
+								if ((board[a][b] > 0 && turn) || (board[a][b] < 0 && !turn)) {
+									if (board[a + countx][b + county] != 0)
+										if ((board[a + countx][b + county] > 0 && board[a][b] > 0) || ((board[a + countx][b + county] < 0 && board[a][b] < 0)))
 											break;
 										else {
-											Chess.legalMoves.add(new Move (a,b,a + countx,b + county));
+											legalMoves.add(new Move (a,b,a + countx,b + county));
 											break;
 										}
 									else
-										Chess.legalMoves.add(new Move (a,b,a + countx,b + county));
+										legalMoves.add(new Move (a,b,a + countx,b + county));
 								}
 								else break;
 							}
@@ -275,16 +279,16 @@ public class Move {
 							countx ++;
 							county --;
 							try {
-								if ((Chess.board[a][b] > 0 && turn) || (Chess.board[a][b] < 0 && !turn)) {
-									if (Chess.board[a + countx][b + county] != 0)
-										if ((Chess.board[a + countx][b + county] > 0 && Chess.board[a][b] > 0) || ((Chess.board[a + countx][b + county] < 0 && Chess.board[a][b] < 0)))
+								if ((board[a][b] > 0 && turn) || (board[a][b] < 0 && !turn)) {
+									if (board[a + countx][b + county] != 0)
+										if ((board[a + countx][b + county] > 0 && board[a][b] > 0) || ((board[a + countx][b + county] < 0 && board[a][b] < 0)))
 											break;
 										else {
-											Chess.legalMoves.add(new Move (a,b,a + countx,b + county));
+											legalMoves.add(new Move (a,b,a + countx,b + county));
 											break;
 										}
 									else
-										Chess.legalMoves.add(new Move (a,b,a + countx,b + county));
+										legalMoves.add(new Move (a,b,a + countx,b + county));
 								}
 								else break;
 							}
@@ -298,16 +302,16 @@ public class Move {
 							countx --;
 							county ++;
 							try {
-								if ((Chess.board[a][b] > 0 && turn) || (Chess.board[a][b] < 0 && !turn)) {	
-									if (Chess.board[a + countx][b + county] != 0)
-										if ((Chess.board[a + countx][b + county] > 0 && Chess.board[a][b] > 0) || ((Chess.board[a + countx][b + county] < 0 && Chess.board[a][b] < 0)))
+								if ((board[a][b] > 0 && turn) || (board[a][b] < 0 && !turn)) {	
+									if (board[a + countx][b + county] != 0)
+										if ((board[a + countx][b + county] > 0 && board[a][b] > 0) || ((board[a + countx][b + county] < 0 && board[a][b] < 0)))
 											break;
 										else {
-											Chess.legalMoves.add(new Move (a,b,a + countx,b + county));
+											legalMoves.add(new Move (a,b,a + countx,b + county));
 											break;
 										}
 									else
-										Chess.legalMoves.add(new Move (a,b,a + countx,b + county));
+										legalMoves.add(new Move (a,b,a + countx,b + county));
 								}
 								else break;
 							}
@@ -321,16 +325,16 @@ public class Move {
 							countx --;
 							county --;
 							try {
-								if ((Chess.board[a][b] > 0 && turn) || (Chess.board[a][b] < 0 && !turn)) {	
-									if (Chess.board[a + countx][b + county] != 0)
-										if ((Chess.board[a + countx][b + county] > 0 && Chess.board[a][b] > 0) || ((Chess.board[a + countx][b + county] < 0 && Chess.board[a][b] < 0)))
+								if ((board[a][b] > 0 && turn) || (board[a][b] < 0 && !turn)) {	
+									if (board[a + countx][b + county] != 0)
+										if ((board[a + countx][b + county] > 0 && board[a][b] > 0) || ((board[a + countx][b + county] < 0 && board[a][b] < 0)))
 											break;
 										else {
-											Chess.legalMoves.add(new Move (a,b,a + countx,b + county));
+											legalMoves.add(new Move (a,b,a + countx,b + county));
 											break;
 										}
 									else
-										Chess.legalMoves.add(new Move (a,b,a + countx,b + county));
+										legalMoves.add(new Move (a,b,a + countx,b + county));
 								}
 								else break;
 							}
@@ -342,16 +346,16 @@ public class Move {
 						while (true) { // Checking right---------------------------------------------------------------------------------------------------------------------------
 							count ++;
 							try {
-								if ((Chess.board[a][b] > 0 && turn) || (Chess.board[a][b] < 0 && !turn)) {	
-									if (Chess.board[a + count][b] != 0)
-										if ((Chess.board[a + count][b] > 0 && Chess.board[a][b] > 0) || ((Chess.board[a + count][b] < 0 && Chess.board[a][b] < 0)))
+								if ((board[a][b] > 0 && turn) || (board[a][b] < 0 && !turn)) {	
+									if (board[a + count][b] != 0)
+										if ((board[a + count][b] > 0 && board[a][b] > 0) || ((board[a + count][b] < 0 && board[a][b] < 0)))
 											break;
 										else {
-											Chess.legalMoves.add(new Move (a,b,a + count,b));
+											legalMoves.add(new Move (a,b,a + count,b));
 											break;
 										}
 									else
-										Chess.legalMoves.add(new Move (a,b,a + count,b));
+										legalMoves.add(new Move (a,b,a + count,b));
 								}
 								else break;
 							}
@@ -363,16 +367,16 @@ public class Move {
 						while (true) { // Checking left----------------------------------------------------------------------------------------------------------------------------
 							count --;
 							try {
-								if ((Chess.board[a][b] > 0 && turn) || (Chess.board[a][b] < 0 && !turn)) {	
-									if (Chess.board[a + count][b] != 0)
-										if ((Chess.board[a + count][b] > 0 && Chess.board[a][b] > 0) || ((Chess.board[a + count][b] < 0 && Chess.board[a][b] < 0)))
+								if ((board[a][b] > 0 && turn) || (board[a][b] < 0 && !turn)) {	
+									if (board[a + count][b] != 0)
+										if ((board[a + count][b] > 0 && board[a][b] > 0) || ((board[a + count][b] < 0 && board[a][b] < 0)))
 											break;
 										else {
-											Chess.legalMoves.add(new Move (a,b,a + count,b));
+											legalMoves.add(new Move (a,b,a + count,b));
 											break;
 										}
 									else
-										Chess.legalMoves.add(new Move (a,b,a + count,b));
+										legalMoves.add(new Move (a,b,a + count,b));
 								}
 								else break;
 							}
@@ -384,16 +388,16 @@ public class Move {
 						while (true) { // Checking up------------------------------------------------------------------------------------------------------------------------------
 							count ++;
 							try {
-								if ((Chess.board[a][b] > 0 && turn) || (Chess.board[a][b] < 0 && !turn)) {	
-									if (Chess.board[a][b + count] != 0)
-										if ((Chess.board[a][b + count] > 0 && Chess.board[a][b] > 0) || ((Chess.board[a][b + count] < 0 && Chess.board[a][b] < 0)))
+								if ((board[a][b] > 0 && turn) || (board[a][b] < 0 && !turn)) {	
+									if (board[a][b + count] != 0)
+										if ((board[a][b + count] > 0 && board[a][b] > 0) || ((board[a][b + count] < 0 && board[a][b] < 0)))
 											break;
 										else {
-											Chess.legalMoves.add(new Move (a,b,a,b + count));
+											legalMoves.add(new Move (a,b,a,b + count));
 											break;
 										}
 									else
-										Chess.legalMoves.add(new Move (a,b,a,b + count));
+										legalMoves.add(new Move (a,b,a,b + count));
 								}
 								else break;
 							}
@@ -405,16 +409,16 @@ public class Move {
 						while (true) { // Checking down----------------------------------------------------------------------------------------------------------------------------
 							count --;
 							try {
-								if ((Chess.board[a][b] > 0 && turn) || (Chess.board[a][b] < 0 && !turn)) {	
-									if (Chess.board[a][b + count] != 0)
-										if ((Chess.board[a][b + count] > 0 && Chess.board[a][b] > 0) || ((Chess.board[a][b + count] < 0 && Chess.board[a][b] < 0)))
+								if ((board[a][b] > 0 && turn) || (board[a][b] < 0 && !turn)) {	
+									if (board[a][b + count] != 0)
+										if ((board[a][b + count] > 0 && board[a][b] > 0) || ((board[a][b + count] < 0 && board[a][b] < 0)))
 											break;
 										else {
-											Chess.legalMoves.add(new Move (a,b,a,b + count));
+											legalMoves.add(new Move (a,b,a,b + count));
 											break;
 										}
 									else
-										Chess.legalMoves.add(new Move (a,b,a,b + count));
+										legalMoves.add(new Move (a,b,a,b + count));
 								}
 								else break;
 							}
@@ -423,28 +427,29 @@ public class Move {
 							}
 						}
 					}
-					else if (Math.abs(Chess.board[a][b]) == 6) { // kings
+					else if (Math.abs(board[a][b]) == 6) { // kings
 						for (int x = -1; x < 2; x ++) {
 							for (int y = -1; y < 2; y ++) {
 								try {
-									if ((Chess.board[a][b] > 0 && turn && Chess.board[a+x][b+y] <= 0) || (Chess.board[a][b] < 0 && !turn && Chess.board[a+x][b+y] >= 0))
-										Chess.legalMoves.add(new Move (a,b,a+x,b+y));
+									if ((board[a][b] > 0 && turn && board[a+x][b+y] <= 0) || (board[a][b] < 0 && !turn && board[a+x][b+y] >= 0))
+										legalMoves.add(new Move (a,b,a+x,b+y));
 								}
 								catch (IndexOutOfBoundsException e) {}
 							}
 						}
-						if (Chess.whiteCastleKing && Chess.board[5][b] == 0 && Chess.board[6][b] == 0 && turn)
-							Chess.legalMoves.add(new Move (a,b,6,b));
-						if (Chess.whiteCastleQueen && Chess.board[3][b] == 0 && Chess.board[2][b] == 0 && Chess.board[1][b] == 0 && turn)
-							Chess.legalMoves.add(new Move (a,b,2,b));
-						if (Chess.blackCastleKing && Chess.board[5][b] == 0 && Chess.board[6][b] == 0 && !turn)
-							Chess.legalMoves.add(new Move (a,b,6,b));
-						if (Chess.blackCastleQueen && Chess.board[3][b] == 0 && Chess.board[2][b] == 0 && Chess.board[1][b] == 0 && !turn)
-							Chess.legalMoves.add(new Move (a,b,2,b));
+						if (Chess.whiteCastleKing && board[5][b] == 0 && board[6][b] == 0 && turn)
+							legalMoves.add(new Move (a,b,6,b));
+						if (Chess.whiteCastleQueen && board[3][b] == 0 && board[2][b] == 0 && board[1][b] == 0 && turn)
+							legalMoves.add(new Move (a,b,2,b));
+						if (Chess.blackCastleKing && board[5][b] == 0 && board[6][b] == 0 && !turn)
+							legalMoves.add(new Move (a,b,6,b));
+						if (Chess.blackCastleQueen && board[3][b] == 0 && board[2][b] == 0 && board[1][b] == 0 && !turn)
+							legalMoves.add(new Move (a,b,2,b));
 					}
 				}
 			}
 		}
+		return legalMoves;
 	}
 
 	public Move (int sx, int sy, int ex, int ey) {
@@ -454,6 +459,16 @@ public class Move {
 		endY = ey;
 		piece = Chess.board[sx][sy];
 		moveName = getMoveName();
+	}
+	
+	public Move (int sx, int sy, int ex, int ey, boolean cap) {
+		startX = sx;
+		startY = sy;
+		endX = ex;
+		endY = ey;
+		piece = Chess.board[sx][sy];
+		moveName = getMoveName();
+		pawnCapture = cap;
 	}
 
 	public String getMoveName () {
@@ -468,7 +483,7 @@ public class Move {
 			cap = "x";
 			if (Math.abs(Chess.board[startX][startY]) == 1)
 				cap = (char) (97 + startX) + cap;
-		}
+				}
 		if (Math.abs(this.piece) == 6) 		piece = "K";
 		else if (Math.abs(this.piece) == 5) piece = "Q";
 		else if (Math.abs(this.piece) == 4) piece = "R";
