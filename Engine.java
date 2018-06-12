@@ -1,5 +1,7 @@
 package ISU;
 
+import java.util.ArrayList;
+
 public class Engine {
 	
 	/*
@@ -28,6 +30,11 @@ public class Engine {
 		}
 		*/
 	
+	public static Move generateMove (ArrayList <Move> legalMoves) {
+		int num = (int) (Math.random()*legalMoves.size());
+		return legalMoves.get(num);
+	}
+	
 	public static int eval () {
 		int eval = 0, temp = 0;
 		// checking material balance
@@ -52,9 +59,6 @@ public class Engine {
 			temp = 0;
 		}
 		// looking for isolated pawns
-		
 		return eval;
 	}
-
-
 }
