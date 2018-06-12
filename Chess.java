@@ -5,6 +5,7 @@
 package ISU;
 
 import java.awt.Canvas;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -39,29 +40,26 @@ public class Chess extends JPanel{
 	public static void timer () {
 		final Timer timer = new Timer();
 		timer.scheduleAtFixedRate(new TimerTask() {
-			String s;
 			public void run() {
-				if (turn == true) {
-					if (whiteT > 100) {
-						s = Integer.toString(whiteT/10);
-						g.drawString(s, 500, 80);
-					}
-					else {
-						s = Double.toString((double) whiteT/10);
-					}
+				if (turn == true)
 					whiteT--;
-				}
-				else if (turn == false) {
-					if (blackT > 100) {
-						s = Integer.toString(blackT/10);
-					}
-					else {
-						s = Double.toString((double) blackT/10);
-					}
+				else if (turn == false)
 					blackT--;
+				if (whiteT == 0) {
+					timer.cancel();
+					JOptionPane.showMessageDialog(Chess.frame, "White timed out, black has won. 0-1");
+					settings ();
+					setBoard ();
 				}
+				if (blackT == 0) {
+					timer.cancel();
+					JOptionPane.showMessageDialog(Chess.frame, "Black Timed out, white has won. 1-0");
+					settings ();
+					setBoard ();
+				}
+				drawBoard();
 			}
-		}, 0, 100);
+		}, 0, 10);
 	}
 
 	/*
@@ -80,33 +78,36 @@ public class Chess extends JPanel{
 		piecesCapturedW.clear();
 		piecesCapturedB.clear();
 		movesPlayed.clear();
-		whiteT = 1800;
-		blackT = 1800;
+		whiteT = 18000;
+		blackT = 18000;
 		for (int a = 0; a < 8; a ++)
 			for (int b = 0; b < 8; b ++)
 				board[b][a] = 0;
-		for (int a = 0; a < 8; a++) {
-			board [a][1] = 1;
-			board [a][6] = -1;
-			piecesW.add(new Piece ((byte)1));
-			piecesB.add(new Piece ((byte)-1));
-		}
-		board [0][0] = 4;
-		board [1][0] = 2;
-		board [2][0] = 3;
-		board [3][0] = 5;
-		board [4][0] = 6;
-		board [5][0] = 3;
-		board [6][0] = 2;
-		board [7][0] = 4;
-		board [0][7] = -4;
-		board [1][7] = -2;
-		board [2][7] = -3;
-		board [3][7] = -5;
-		board [4][7] = -6;
-		board [5][7] = -3;
-		board [6][7] = -2;
-		board [7][7] = -4;
+//		for (int a = 0; a < 8; a++) {
+//			board [a][1] = 1;
+//			board [a][6] = -1;
+//			piecesW.add(new Piece ((byte)1));
+//			piecesB.add(new Piece ((byte)-1));
+//		}
+//		board [0][0] = 4;
+//		board [1][0] = 2;
+//		board [2][0] = 3;
+//		board [3][0] = 5;
+//		board [4][0] = 6;
+//		board [5][0] = 3;
+//		board [6][0] = 2;
+//		board [7][0] = 4;
+//		board [0][7] = -4;
+//		board [1][7] = -2;
+//		board [2][7] = -3;
+//		board [3][7] = -5;
+//		board [4][7] = -6;
+//		board [5][7] = -3;
+//		board [6][7] = -2;
+//		board [7][7] = -4;
+		board [0][7] = -6;
+		board [0][5] = 6;
+		board [1][1] = 5;
 		piecesW.add(new Piece ((byte)6));
 		piecesW.add(new Piece ((byte)5));
 		piecesW.add(new Piece ((byte)4));
@@ -141,6 +142,7 @@ public class Chess extends JPanel{
 		bufferStrat = canvas.getBufferStrategy();
 		g=bufferStrat.getDrawGraphics();
 		g.setFont(new Font("Calibri", 0, 24));
+		g.setColor(Color.GRAY);
 	}
 
 	/*
@@ -150,6 +152,20 @@ public class Chess extends JPanel{
 	public static void drawBoard () {
 		g.clearRect(0, 0, 800, 600);
 		g.drawImage(ChessLoadRes.back, 0, 0, frame);
+		String timeW = "", timeB = "";
+		timeW += whiteT/6000;
+		timeB += blackT/6000;
+		timeW += ":"; //Integer.toString(whiteT%6000/100);
+		timeB += ":"; //Integer.toString(blackT%6000/100);
+		if (whiteT%6000/100 < 10)	timeW += "0" + Integer.toString(whiteT%6000/100);
+		else						timeW +=Integer.toString(whiteT%6000/100);
+		if (blackT%6000/100 < 10)	timeB += "0" + Integer.toString(blackT%6000/100);
+		else						timeB +=Integer.toString(blackT%6000/100);
+		if (whiteT < 1000)	timeW += "." + Integer.toString(whiteT%100);
+		if (blackT < 1000)	timeB += "." + Integer.toString(blackT%100);
+		g.drawString(timeW, 505, 83);
+		g.drawString(timeB, 505, 433);
+
 		for (int a = 7; a >= 0; a--)
 			for (int b = 7; b >= 0; b--)
 				if (board[b][a] == 1)		g.drawImage(ChessLoadRes.wp, b*50+50, 350-a*50+50, frame);
@@ -176,7 +192,6 @@ public class Chess extends JPanel{
 			else if	(piecesCapturedW.get(a).name == 1)	g.drawImage(ChessLoadRes.silp, a*25+25, 475, frame);
 			balance -= (piecesCapturedW.get(a).value/100);
 		}
-		System.out.println();
 		for (int a = 0; a < piecesCapturedB.size(); a ++) {
 			if		(piecesCapturedB.get(a).name == -6)	g.drawImage(ChessLoadRes.silk, a*25+25, 505, frame);
 			else if	(piecesCapturedB.get(a).name == -5)	g.drawImage(ChessLoadRes.silq, a*25+25, 505, frame);
@@ -262,6 +277,7 @@ public class Chess extends JPanel{
 				legalMovesNextPlayer.clear();
 				legalMovesNextPlayer = Move.findLegalMoves(!turn, board);
 				checkForMate();
+				whiteT += 200;
 				temp = false;
 				for (int a = 0; a < piecesB.size(); a ++)
 					if (piecesB.get(a).name == -6)
@@ -271,7 +287,6 @@ public class Chess extends JPanel{
 				turn = false;
 				if  (!pvp)
 					moveBlack ();
-				//showMoves();
 			}
 		}
 	}
@@ -339,6 +354,7 @@ public class Chess extends JPanel{
 				legalMovesNextPlayer.clear();
 				legalMovesNextPlayer = Move.findLegalMoves(!turn, board);
 				checkForMate();
+				blackT += 200;
 				temp = false;
 				for (int a = 0; a < piecesW.size(); a ++)
 					if (piecesW.get(a).name == 6)
@@ -348,7 +364,6 @@ public class Chess extends JPanel{
 				turn = true;
 				if  (!pvp)
 					moveWhite ();
-				//showMoves();
 			}
 		}
 	}
@@ -397,17 +412,50 @@ public class Chess extends JPanel{
 
 	}
 
-	public static boolean checkForMate () {
-		//		boolean[][] kingMoves = new boolean[3][3];
-		//		legalMoves = Move.findLegalMoves(turn, board);
-		//		for (int a = 0; a < legalMoves.size(); a++) {
-		//			if ((board[legalMoves.get(a).endX][legalMoves.get(a).endY] == -6 && turn) || (board[legalMoves.get(a).endX][legalMoves.get(a).endY] == 6 && !turn))
-		//				if
-		//		}
-		//		kingMoves.
-		return false;
+	public static void checkForMate () {
+		boolean checkmate = true, stalemate = true;
+		byte mult;
+		if (turn)	mult = -1;
+		else		mult = 1;
+		byte kingX = 0, kingY = 0;
+		for (int a = 0; a < 8; a ++)
+			for (int b = 0; b < 8; b++)
+				if (board[a][b] == 6 * mult) {
+					kingX = (byte) a;
+					kingY = (byte) b;
+				}
+		legalMovesNextPlayer = Move.findLegalMoves(!turn, board); // gets all the legal moves of the NEXT player
+		ArrayList <Move> kingMoves = new ArrayList <Move> ();
+		// Loops through all legal moves (next player) and adds them to a new array list ONLY if the piece being moved is a king
+		for (int a = 0; a < legalMovesNextPlayer.size(); a++)
+			if (board[legalMovesNextPlayer.get(a).startX][legalMovesNextPlayer.get(a).startY] == 6 * mult)
+				kingMoves.add(legalMovesNextPlayer.get(a));
+			else
+				stalemate = false; // if other pieces can move, it isn't stalemate
+		int count = 0;
+		for (int a = 0; a < kingMoves.size(); a ++) // loops trough all king moves to see if the opponent is attacking that square
+			for (int b = 0; b < legalMoves.size(); b++)
+				if (legalMoves.get(b).endX == kingMoves.get(a).endX && legalMoves.get(b).endY == kingMoves.get(a).endY) {
+					count ++;
+					break;
+				}
+		if (count != kingMoves.size()) {
+			checkmate = false;
+			stalemate = false;
+		}
+		for (int a = 0; a < legalMoves.size(); a++) {
+			System.out.println(legalMoves.get(a).endX + "," + legalMoves.get(a).endY);
+			if (legalMoves.get(a).endX == kingX && legalMoves.get(a).endY == kingY)
+				stalemate = false;
+			else
+				checkmate = false;
+		}
+		System.out.println(kingX + "    " + kingY);
+		if (checkmate)
+			System.out.println("Checkmate");
+		if (stalemate)
+			System.out.println("stalemate");
 	}
-
 
 	public Chess () {
 		drawBoard();
@@ -420,11 +468,10 @@ public class Chess extends JPanel{
 					JOptionPane.showMessageDialog(Chess.frame, showMoves());
 				else if (e.getX() > 650 && e.getX() < 770 && e.getY() > 155 && e.getY() < 195) {
 					if (JOptionPane.showConfirmDialog(Chess.frame, "Are you sure you want to resign?") == 0) {
-						if (turn)	JOptionPane.showMessageDialog(Chess.frame, "Black has won. 0-1");
-						else		JOptionPane.showMessageDialog(Chess.frame, "White has won. 1-0");
-						setBoard ();
-						drawBoard ();
+						if (turn)	JOptionPane.showMessageDialog(Chess.frame, "White resigned, black has won. 0-1");
+						else		JOptionPane.showMessageDialog(Chess.frame, "Black resigned, white has won. 1-0");
 						settings ();
+						setBoard ();
 					}
 				}
 				else if (e.getX() > 650 && e.getX() < 770 && e.getY() > 405 && e.getY() < 445)
@@ -440,9 +487,8 @@ public class Chess extends JPanel{
 					if (win) {
 						if (!turn)		JOptionPane.showMessageDialog(Chess.frame, "White has won. 1-0");
 						else if (turn)	JOptionPane.showMessageDialog(Chess.frame, "Black has won. 0-1");
-						setBoard ();
-						drawBoard ();
 						settings ();
+						setBoard ();
 					}
 				}
 			}
