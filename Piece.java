@@ -1,4 +1,5 @@
 package ISU;
+package ISU;
 
 public class Piece {
 	
@@ -37,6 +38,5 @@ public class Piece {
 		if (p.name == this.name)
 			return true;
 		return false;
-	}
-		
+	}	
 }
