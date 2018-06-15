@@ -43,9 +43,12 @@ public class Chess extends JPanel{
 		board[m.startX][m.startY] = board [m.endX][m.endY];
 		board [m.endX][m.endY] = m.pieceCaptured;
 		movesPlayed.remove(movesPlayed.size()-1);
-		turn = !turn;
+		if (m.pieceCaptured < 0)
+			piecesCapturedB.remove(piecesCapturedB.size() - 1);
+		else if (m.pieceCaptured > 0)
+			piecesCapturedW.remove(piecesCapturedW.size() - 1);
 	}
-	
+
 	/*
 	 * creates a timer for both players
 	 * when the timer reaches zero; the current side it is on will lose
@@ -212,6 +215,7 @@ public class Chess extends JPanel{
 	 * Adds the piece found in the starting cell to the ending cell and replaces the piece in starting cell with 0
 	 */
 	public static void makeMove (Move m) {
+		movesPlayed.add(m);
 		// checks to see if a piece is captured and removes it from ArrayList
 		if (turn && board[m.endX][m.endY] < 0)
 			for (int a = 0; a < piecesB.size(); a ++) {
@@ -287,6 +291,7 @@ public class Chess extends JPanel{
 					temp = true;
 			if (!temp)
 				win = true;
+			whiteT += 200; // timer increment
 			turn = false;
 		}
 		else { // if player moves
@@ -295,7 +300,6 @@ public class Chess extends JPanel{
 			for (int a = 0; a <legalMoves.size(); a++)
 				if (legalMoves.get(a).equals(currentMove)) {
 					temp = true; // checks to see if move is legal
-					movesPlayed.add(legalMoves.get(a));
 					break;
 				}
 			if (temp) {
@@ -343,11 +347,7 @@ public class Chess extends JPanel{
 		legalMoves = Move.findLegalMoves (turn, board);
 		if (playerSide && !pvp) { // if engine moves
 			currentMove = Engine.generateMove(legalMoves);
-			byte [][] boardN = new byte [8][8];
-			for(int i = 0; i < board.length; i++)
-				boardN[i] = board[i].clone();
-			System.out.println(Engine.alphaBetaMin(-1000,1000,3, boardN)); // ENGINE SETTINGS ------------------------------------------
-			makeMove (Engine.move);
+			System.out.println(Engine.alphaBetaMin(-1000,1000,3)); // ENGINE SETTINGS ------------------------------------------
 			if (currentMove.endY == 0 && board[currentMove.endX][currentMove.endY] == -1)
 				board[currentMove.endX][currentMove.endY] = -5;
 			boolean temp = false;
@@ -357,6 +357,7 @@ public class Chess extends JPanel{
 			}
 			if (!temp)
 				win = true;
+			blackT += 200; // timer increment
 			turn = true;
 		}
 		else { // if player moves
@@ -365,7 +366,6 @@ public class Chess extends JPanel{
 			for (int a = 0; a <legalMoves.size(); a++)
 				if (legalMoves.get(a).equals(currentMove)) {
 					temp = true; // checks to see if move is legal
-					movesPlayed.add(legalMoves.get(a));
 					break;
 				}
 			if (temp) {
@@ -425,6 +425,12 @@ public class Chess extends JPanel{
 						else		JOptionPane.showMessageDialog(Chess.frame, "Black resigned, white has won. 1-0");
 						settings ();
 						setBoard ();
+					}
+				}
+				if (e.getX() > 650 && e.getX() < 770 && e.getY() > 255 && e.getY() < 295) {
+					if (movesPlayed.size() > 0) {
+						turn = !turn;
+						undo ();
 					}
 				}
 				else if (e.getX() > 650 && e.getX() < 770 && e.getY() > 405 && e.getY() < 445)
