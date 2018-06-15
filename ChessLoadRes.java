@@ -9,7 +9,7 @@ import javax.imageio.ImageIO;
 
 // This class loads all the images that will be used
 public class ChessLoadRes {
-	public static BufferedImage wk,wq,wr,wb,wn,wp,bk,bq,br,bb,bn,bp,back,silk,silq,silr,silb,siln,silp,title;
+	public static BufferedImage wk,wq,wr,wb,wn,wp,bk,bq,br,bb,bn,bp,back,silk,silq,silr,silb,siln,silp;
 	
 	// creates BufferedImages
 	public static void loadAssets(){
@@ -32,7 +32,6 @@ public class ChessLoadRes {
 		siln  = loadImage ("src/ISU/res/chess_piece_silhouette_knight.png");
 		silp  = loadImage ("src/ISU/res/chess_piece_silhouette_pawn.png");
 		back  = loadImage ("src/ISU/res/back.png");
-		title = loadImage ("src/ISU/res/title.png");
 	}
 	
 	// Loads images from files to the BufferedImages
