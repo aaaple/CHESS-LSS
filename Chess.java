@@ -27,9 +27,10 @@ public class Chess extends JPanel{
 	// pawns=1, knights=2, bishops=3, rook=4, queen=5, king=6, 0=unoccupied square negative values represent black
 	public static byte[][] board = new byte [8][8];
 	public static int startX, startY, endX, endY;
-	public static boolean turn = true, pvp = true, playerSide = true, win = false, whiteCastleKing = true, whiteCastleQueen = true, blackCastleKing = true, blackCastleQueen = true;
+	public static boolean turn = true, pvp = true, playerSide = true, win = false;
+	public static boolean wCastleKing = true, wCastleQueen = true, bCastleKing = true, bCastleQueen = true;
 	public static ArrayList <Piece> piecesB = new ArrayList <Piece> (), piecesW = new ArrayList <Piece> (), piecesCapturedW = new ArrayList <Piece> (), piecesCapturedB = new ArrayList <Piece> ();
-	public static ArrayList <Move> legalMoves = new ArrayList <Move> (), legalMovesNextPlayer = new ArrayList <Move> (), movesPlayed = new ArrayList <Move> ();
+	public static ArrayList <Move> legalMoves = new ArrayList <Move> (), movesPlayed = new ArrayList <Move> ();
 	private static Move currentMove;
 	private static Canvas canvas;
 	private static Graphics g;
@@ -37,6 +38,19 @@ public class Chess extends JPanel{
 	private static JFrame frame;
 	private static int whiteT, blackT;
 
+	public static void undo () {
+		Move m = movesPlayed.get(movesPlayed.size()-1);
+		board[m.startX][m.startY] = board [m.endX][m.endY];
+		board [m.endX][m.endY] = m.pieceCaptured;
+		movesPlayed.remove(movesPlayed.size()-1);
+		turn = !turn;
+	}
+	
+	/*
+	 * creates a timer for both players
+	 * when the timer reaches zero; the current side it is on will lose
+	 * timer is currently set to 3 minutes with 2 second increments, but can be changed
+	 */
 	public static void timer () {
 		final Timer timer = new Timer();
 		timer.scheduleAtFixedRate(new TimerTask() {
@@ -46,13 +60,11 @@ public class Chess extends JPanel{
 				else if (turn == false)
 					blackT--;
 				if (whiteT == 0) {
-					timer.cancel();
 					JOptionPane.showMessageDialog(Chess.frame, "White timed out, black has won. 0-1");
 					settings ();
 					setBoard ();
 				}
 				if (blackT == 0) {
-					timer.cancel();
 					JOptionPane.showMessageDialog(Chess.frame, "Black Timed out, white has won. 1-0");
 					settings ();
 					setBoard ();
@@ -69,10 +81,10 @@ public class Chess extends JPanel{
 	public static void setBoard () {
 		win = false;
 		turn = true;
-		whiteCastleKing = false;
-		whiteCastleQueen = false;
-		blackCastleKing = false;
-		blackCastleQueen = false;
+		wCastleKing = true;
+		wCastleQueen = true;
+		bCastleKing = true;
+		bCastleQueen = true;
 		piecesW.clear();
 		piecesB.clear();
 		piecesCapturedW.clear();
@@ -83,31 +95,28 @@ public class Chess extends JPanel{
 		for (int a = 0; a < 8; a ++)
 			for (int b = 0; b < 8; b ++)
 				board[b][a] = 0;
-//		for (int a = 0; a < 8; a++) {
-//			board [a][1] = 1;
-//			board [a][6] = -1;
-//			piecesW.add(new Piece ((byte)1));
-//			piecesB.add(new Piece ((byte)-1));
-//		}
-//		board [0][0] = 4;
-//		board [1][0] = 2;
-//		board [2][0] = 3;
-//		board [3][0] = 5;
-//		board [4][0] = 6;
-//		board [5][0] = 3;
-//		board [6][0] = 2;
-//		board [7][0] = 4;
-//		board [0][7] = -4;
-//		board [1][7] = -2;
-//		board [2][7] = -3;
-//		board [3][7] = -5;
-//		board [4][7] = -6;
-//		board [5][7] = -3;
-//		board [6][7] = -2;
-//		board [7][7] = -4;
-		board [0][7] = -6;
-		board [0][5] = 6;
-		board [1][1] = 5;
+		for (int a = 0; a < 8; a++) {
+			board [a][1] = 1;
+			board [a][6] = -1;
+			piecesW.add(new Piece ((byte)1));
+			piecesB.add(new Piece ((byte)-1));
+		}
+		board [0][0] = 4;
+		board [1][0] = 2;
+		board [2][0] = 3;
+		board [3][0] = 5;
+		board [4][0] = 6;
+		board [5][0] = 3;
+		board [6][0] = 2;
+		board [7][0] = 4;
+		board [0][7] = -4;
+		board [1][7] = -2;
+		board [2][7] = -3;
+		board [3][7] = -5;
+		board [4][7] = -6;
+		board [5][7] = -3;
+		board [6][7] = -2;
+		board [7][7] = -4;
 		piecesW.add(new Piece ((byte)6));
 		piecesW.add(new Piece ((byte)5));
 		piecesW.add(new Piece ((byte)4));
@@ -137,14 +146,6 @@ public class Chess extends JPanel{
 		return s;
 	}
 
-	public static void setGraphics () {
-		canvas.createBufferStrategy(3);
-		bufferStrat = canvas.getBufferStrategy();
-		g=bufferStrat.getDrawGraphics();
-		g.setFont(new Font("Calibri", 0, 24));
-		g.setColor(Color.GRAY);
-	}
-
 	/*
 	 * Draws the board
 	 * Draws images of each piece based on where it is on the board
@@ -163,9 +164,8 @@ public class Chess extends JPanel{
 		else						timeB +=Integer.toString(blackT%6000/100);
 		if (whiteT < 1000)	timeW += "." + Integer.toString(whiteT%100);
 		if (blackT < 1000)	timeB += "." + Integer.toString(blackT%100);
-		g.drawString(timeW, 505, 83);
-		g.drawString(timeB, 505, 433);
-
+		g.drawString(timeW, 505, 433);
+		g.drawString(timeB, 505, 83);
 		for (int a = 7; a >= 0; a--)
 			for (int b = 7; b >= 0; b--)
 				if (board[b][a] == 1)		g.drawImage(ChessLoadRes.wp, b*50+50, 350-a*50+50, frame);
@@ -212,8 +212,64 @@ public class Chess extends JPanel{
 	 * Adds the piece found in the starting cell to the ending cell and replaces the piece in starting cell with 0
 	 */
 	public static void makeMove (Move m) {
+		// checks to see if a piece is captured and removes it from ArrayList
+		if (turn && board[m.endX][m.endY] < 0)
+			for (int a = 0; a < piecesB.size(); a ++) {
+				if (piecesB.get(a).name == board[m.endX][m.endY]) {
+					piecesB.remove(a);
+					piecesCapturedB.add(new Piece (board[m.endX][m.endY]));
+					movesPlayed.get(movesPlayed.size()-1).pieceCaptured = board[m.endX][m.endY];
+					break;
+				}
+			}
+		if (!turn && board[m.endX][m.endY] > 0)
+			for (int a = 0; a < piecesW.size(); a ++) // checks to see if a piece is captured and removes it from ArrayList
+				if (piecesW.get(a).name == board[m.endX][m.endY]) {
+					piecesW.remove(a);
+					piecesCapturedW.add(new Piece (board[m.endX][m.endY]));
+					movesPlayed.get(movesPlayed.size()-1).pieceCaptured = board[m.endX][m.endY];
+					break;
+				}
+		// Moving the pieces
 		board[m.endX][m.endY] = board [m.startX][m.startY];
 		board [m.startX][m.startY] = 0;
+		// Checking for castling
+		if (turn) {
+			if (board [m.endX][m.endY] == 6 && m.endX == 6 && wCastleKing) { // white castling kingside
+				board [5][0] = 4;
+				board [7][0] = 0;
+			}
+			else if (board [m.endX][m.endY] == 6 && m.endX == 2 && wCastleQueen) { // white castling queenside
+				board [3][0] = 4;
+				board [0][0] = 0;
+			}
+			if (board[m.endX][m.endY] == 4 && m.startX == 0) // this checks to see if a rook or king moved and if so, prevents castling
+				wCastleQueen = false;
+			else if (board[m.endX][m.endY] == 4 && m.startX == 7)
+				wCastleKing = false;	
+			else if (board[m.endX][m.endY] == 6) {
+				wCastleKing = false;
+				wCastleQueen = false;
+			}
+		}
+		else {
+			if (board [m.endX][m.endY] == -6 && m.endX == 6 && bCastleKing) { // white castling kingside
+				board [5][7] = -4;
+				board [7][7] = 0;
+			}
+			else if (board [m.endX][m.endY] == -6 && m.endX == 2 && bCastleQueen) { // white castling queenside
+				board [3][7] = -4;
+				board [0][7] = 0;
+			}
+			if (board[m.endX][m.endY] == -4 && m.startX == 0) // this checks to see if a rook or king moved and if so, prevents castling
+				bCastleQueen = false;
+			else if (board[m.endX][m.endY] == -4 && m.startX == 7)
+				bCastleKing = false;	
+			else if (board[m.endX][m.endY] == -6) {
+				bCastleKing = false;
+				bCastleQueen = false;
+			}
+		}
 	}
 
 	// makes move for white
@@ -222,8 +278,9 @@ public class Chess extends JPanel{
 		legalMoves = Move.findLegalMoves (turn, board);
 		if (!playerSide && !pvp) { // if engine moves
 			currentMove = Engine.generateMove(legalMoves);
-			castle(board, currentMove);
 			makeMove (currentMove);
+			if (currentMove.endY == 7 && board[currentMove.endX][currentMove.endY] == 1)
+				board[currentMove.endX][currentMove.endY] = 5;
 			boolean temp = false;
 			for (int a = 0; a < piecesB.size(); a ++)
 				if (piecesB.get(a).name == -6)
@@ -242,14 +299,6 @@ public class Chess extends JPanel{
 					break;
 				}
 			if (temp) {
-				castle(board, currentMove);
-				if (board[endX][endY] < 0)
-					for (int a = 0; a < piecesB.size(); a ++) // checks to see if a piece is captured and removes it from ArrayList
-						if (piecesB.get(a).name == board[endX][endY]) {
-							piecesB.remove(a);
-							piecesCapturedB.add(new Piece (board[endX][endY]));
-							break;
-						}
 				makeMove (currentMove);
 				if (endY == 7 && board[endX][endY] == 1) { // Pawn Promotion when pawn reaches end of the board
 					byte choice;
@@ -274,10 +323,7 @@ public class Chess extends JPanel{
 					piecesW.add(new Piece ((byte) choice));
 					Collections.sort(piecesW, new SortPieceValue());
 				}
-				legalMovesNextPlayer.clear();
-				legalMovesNextPlayer = Move.findLegalMoves(!turn, board);
-				checkForMate();
-				whiteT += 200;
+				whiteT += 200; // timer increment
 				temp = false;
 				for (int a = 0; a < piecesB.size(); a ++)
 					if (piecesB.get(a).name == -6)
@@ -297,8 +343,13 @@ public class Chess extends JPanel{
 		legalMoves = Move.findLegalMoves (turn, board);
 		if (playerSide && !pvp) { // if engine moves
 			currentMove = Engine.generateMove(legalMoves);
-			castle(board, currentMove);
-			makeMove (currentMove);
+			byte [][] boardN = new byte [8][8];
+			for(int i = 0; i < board.length; i++)
+				boardN[i] = board[i].clone();
+			System.out.println(Engine.alphaBetaMin(-1000,1000,3, boardN)); // ENGINE SETTINGS ------------------------------------------
+			makeMove (Engine.move);
+			if (currentMove.endY == 0 && board[currentMove.endX][currentMove.endY] == -1)
+				board[currentMove.endX][currentMove.endY] = -5;
 			boolean temp = false;
 			for (int a = 0; a < piecesW.size(); a ++) {
 				if (piecesW.get(a).name == 6)
@@ -318,17 +369,8 @@ public class Chess extends JPanel{
 					break;
 				}
 			if (temp) {
-				castle(board, currentMove);
-				if (board[endX][endY] > 0)
-					for (int a = 0; a < piecesB.size(); a ++) // checks to see if a piece is captured and removes it from ArrayList
-						if (piecesW.get(a).name == board[endX][endY]) {
-							piecesW.remove(a);
-							piecesCapturedW.add(new Piece (board[endX][endY]));
-							break;
-						}
-				board[endX][endY] = board [startX][startY]; // moves pieces on the board
-				board [startX][startY] = 0;
-				if (endY == 0 && board[endX][endY] == -1) {
+				makeMove (currentMove);
+				if (endY == 0 && board[endX][endY] == -1) { // Pawn Promotion when pawn reaches end of the board
 					byte choice;
 					Object[] options1 = {"Knight", "Bishop", "Rook", "Queen"};
 					choice = (byte) JOptionPane.showOptionDialog(null,
@@ -340,21 +382,18 @@ public class Chess extends JPanel{
 							options1,
 							null);
 					choice += 2;
-					board[endX][endY] = (byte) -choice;
+					board[endX][endY] = choice;
 					char name;
 					if (choice == 5)		name = 'Q';
 					else if (choice == 2)	name = 'N';
 					else if (choice == 4)	name = 'R';
 					else					name = 'B';
 					movesPlayed.get(movesPlayed.size()-1).moveName += "=" + name;
-					piecesB.remove(piecesB.size() - 1);
-					piecesB.add(new Piece ((byte) -choice));
+					piecesW.remove(piecesB.size() - 1);
+					piecesW.add(new Piece ((byte) -choice));
 					Collections.sort(piecesB, new SortPieceValue());
 				}
-				legalMovesNextPlayer.clear();
-				legalMovesNextPlayer = Move.findLegalMoves(!turn, board);
-				checkForMate();
-				blackT += 200;
+				blackT += 200; // timer increment
 				temp = false;
 				for (int a = 0; a < piecesW.size(); a ++)
 					if (piecesW.get(a).name == 6)
@@ -366,95 +405,9 @@ public class Chess extends JPanel{
 					moveWhite ();
 			}
 		}
-	}
 
-	/*
-	 * checks every turn to see if castling is still allowed
-	 * moves rook if castling is detected
-	 */
-	public static void castle (byte[][] board, Move currentMove) {
-		if (turn) {
-			if (board [currentMove.startX][currentMove.startY] == 6 && currentMove.endX == 6 && whiteCastleKing) { // white castling kingside
-				board [5][0] = 4;
-				board [7][0] = 0;
-			}
-			else if (board [currentMove.startX][currentMove.startY] == 6 && currentMove.endX == 2 && whiteCastleQueen) { // white castling queenside
-				board [3][0] = 4;
-				board [0][0] = 0;
-			}
-			if (board[currentMove.startX][currentMove.startY] == 4 && currentMove.startX == 0) // this checks to see if a rook or king moved and if so, prevents castling
-				whiteCastleQueen = false;
-			else if (board[currentMove.startX][currentMove.startY] == 4 && currentMove.startX == 7)
-				whiteCastleKing = false;	
-			else if (board[currentMove.startX][currentMove.startY] == 6) {
-				whiteCastleKing = false;
-				whiteCastleQueen = false;
-			}
-		}
-		else {
-			if (board [currentMove.startX][currentMove.startY] == -6 && currentMove.endX == 6 && blackCastleKing) { // white castling kingside
-				board [5][7] = -4;
-				board [7][7] = 0;
-			}
-			else if (board [currentMove.startX][currentMove.startY] == -6 && currentMove.endX == 2 && blackCastleQueen) { // white castling queenside
-				board [3][7] = -4;
-				board [0][7] = 0;
-			}
-			if (board[currentMove.startX][currentMove.startY] == -4 && currentMove.startX == 0) // this checks to see if a rook or king moved and if so, prevents castling
-				blackCastleQueen = false;
-			else if (board[currentMove.startX][currentMove.startY] == -4 && currentMove.startX == 7)
-				blackCastleKing = false;	
-			else if (board[currentMove.startX][currentMove.startY] == -6) {
-				blackCastleKing = false;
-				blackCastleQueen = false;
-			}
-		}
 
-	}
 
-	public static void checkForMate () {
-		boolean checkmate = true, stalemate = true;
-		byte mult;
-		if (turn)	mult = -1;
-		else		mult = 1;
-		byte kingX = 0, kingY = 0;
-		for (int a = 0; a < 8; a ++)
-			for (int b = 0; b < 8; b++)
-				if (board[a][b] == 6 * mult) {
-					kingX = (byte) a;
-					kingY = (byte) b;
-				}
-		legalMovesNextPlayer = Move.findLegalMoves(!turn, board); // gets all the legal moves of the NEXT player
-		ArrayList <Move> kingMoves = new ArrayList <Move> ();
-		// Loops through all legal moves (next player) and adds them to a new array list ONLY if the piece being moved is a king
-		for (int a = 0; a < legalMovesNextPlayer.size(); a++)
-			if (board[legalMovesNextPlayer.get(a).startX][legalMovesNextPlayer.get(a).startY] == 6 * mult)
-				kingMoves.add(legalMovesNextPlayer.get(a));
-			else
-				stalemate = false; // if other pieces can move, it isn't stalemate
-		int count = 0;
-		for (int a = 0; a < kingMoves.size(); a ++) // loops trough all king moves to see if the opponent is attacking that square
-			for (int b = 0; b < legalMoves.size(); b++)
-				if (legalMoves.get(b).endX == kingMoves.get(a).endX && legalMoves.get(b).endY == kingMoves.get(a).endY) {
-					count ++;
-					break;
-				}
-		if (count != kingMoves.size()) {
-			checkmate = false;
-			stalemate = false;
-		}
-		for (int a = 0; a < legalMoves.size(); a++) {
-			System.out.println(legalMoves.get(a).endX + "," + legalMoves.get(a).endY);
-			if (legalMoves.get(a).endX == kingX && legalMoves.get(a).endY == kingY)
-				stalemate = false;
-			else
-				checkmate = false;
-		}
-		System.out.println(kingX + "    " + kingY);
-		if (checkmate)
-			System.out.println("Checkmate");
-		if (stalemate)
-			System.out.println("stalemate");
 	}
 
 	public Chess () {
@@ -531,10 +484,7 @@ public class Chess extends JPanel{
 		else frame.dispose();
 	}
 
-	/*
-	 * Main class
-	 * initializes the JFrame and Graphics and implements a mouse action listener to detect when a player makes a move
-	 */
+	// Main class, initializes the JFrame and Graphics and implements a mouse action listener to detect when a player makes a move
 	public static void main(String[] args) {
 		setBoard();
 		ChessLoadRes.loadAssets();
@@ -546,7 +496,11 @@ public class Chess extends JPanel{
 		frame.add(canvas);
 		frame.setVisible(true);
 		frame.pack();
-		setGraphics();
+		canvas.createBufferStrategy(3);
+		bufferStrat = canvas.getBufferStrategy();
+		g=bufferStrat.getDrawGraphics();
+		g.setFont(new Font("Calibri", 0, 24));
+		g.setColor(Color.GRAY);
 		settings();
 		bufferStrat.show();
 		new Chess();
