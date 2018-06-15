@@ -1,5 +1,4 @@
 package ISU;
-package ISU;
 
 public class Piece {
 	
@@ -16,7 +15,7 @@ public class Piece {
 		else if (Math.abs(name) == 3) value = 301;
 		else if (Math.abs(name) == 4) value = 500;
 		else if (Math.abs(name) == 5) value = 900;
-		else if (Math.abs(name) == 6) value = 10000000;
+		else if (Math.abs(name) == 6) value = 1000000;
 		if (b < 0)
 			value = -value;
 	}
@@ -38,5 +37,6 @@ public class Piece {
 		if (p.name == this.name)
 			return true;
 		return false;
-	}	
+	}
+		
 }
