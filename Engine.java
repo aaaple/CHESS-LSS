@@ -3,29 +3,18 @@ package ISU;
 import java.util.ArrayList;
 
 public class Engine {
-
-	public static Move move;
-
-
-
-	public static int alphaBetaMax(int alpha, int beta, int depth, byte[][] board) {
+	
+	public static int alphaBetaMax(int alpha, int beta, int depth) {
 		if (depth == 0) {
-			return eval(board); // Base case depth reached
+			Chess.undo();
+			return eval(Chess.board); // Base case depth reached
 		}
 		ArrayList <Move> legalMoves = new ArrayList <Move> ();
-		legalMoves = Move.findLegalMoves(true, board);
+		legalMoves = Move.findLegalMoves(true, Chess.board);
 		for (int a = 0; a < legalMoves.size(); a++) {
-			byte [][] boardN = new byte [8][8];
-			for(int i = 0; i < board.length; i++)
-				boardN[i] = board[i].clone();
 			Move m = legalMoves.get(a);
-			
-			boardN[m.startX][m.startY] = boardN[m.endX][m.endY];
-			boardN[m.startX][m.startY] = 0;
-			if (board[m.endX][m.endY] == 1 && m.endY == 7)
-				board[m.endX][m.endY] = 5;
-			
-			int score = alphaBetaMin(alpha, beta, depth - 1, boardN);
+			Chess.makeMove(m);
+			int score = alphaBetaMin(alpha, beta, depth - 1);
 			if(score >= beta) {
 				return beta;   // fail hard beta-cutoff
 			}
@@ -36,24 +25,17 @@ public class Engine {
 		return alpha;
 	}
 
-	public static int alphaBetaMin(int alpha, int beta, int depth, byte[][] board) {
+	public static int alphaBetaMin(int alpha, int beta, int depth) {
 		if (depth == 0) {
-			return eval(board); // Base case depth reached
+			Chess.undo();
+			return eval(Chess.board); // Base case depth reached
 		}
 		ArrayList <Move> legalMoves = new ArrayList <Move> ();
-		legalMoves = Move.findLegalMoves(false, board);
+		legalMoves = Move.findLegalMoves(false, Chess.board);
 		for (int a = 0; a < legalMoves.size(); a++) {
-			byte [][] boardN = new byte [8][8];
-			for(int i = 0; i < board.length; i++)
-				boardN[i] = board[i].clone();
 			Move m = legalMoves.get(a);
-			
-			boardN[m.startX][m.startY] = boardN[m.endX][m.endY];
-			boardN[m.startX][m.startY] = 0;
-			if (board[m.endX][m.endY] == -1 && m.endY == 0)
-				board[m.endX][m.endY] = -5;
-			
-			int score = alphaBetaMax(alpha, beta, depth - 1, boardN);
+			Chess.makeMove(m);
+			int score = alphaBetaMax(alpha, beta, depth - 1);
 			if(score <= alpha) {
 				return alpha; // fail hard alpha-cutoff
 			}
