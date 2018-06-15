@@ -4,9 +4,8 @@ import java.util.ArrayList;
 
 public class Move {
 	
-	public boolean pawnCapture;
 	public int startX, startY, endX, endY;
-	public byte piece;
+	public byte piece, pieceCaptured = 0;
 	public String moveName;
 
 	public static ArrayList<Move> findLegalMoves (boolean turn, byte [][] board) {
@@ -27,9 +26,9 @@ public class Move {
 							if (board[a][b+1] == 0)
 								legalMoves.add(new Move (a,b,a,b+1));
 						}
-						try { if (board[a+1][b+1] < 0)legalMoves.add(new Move (a,b,a+1,b+1,true));}
+						try { if (board[a+1][b+1] < 0)legalMoves.add(new Move (a,b,a+1,b+1));}
 						catch (IndexOutOfBoundsException e) {}
-						try { if (board[a-1][b+1] < 0)legalMoves.add(new Move (a,b,a-1,b+1,true));}
+						try { if (board[a-1][b+1] < 0)legalMoves.add(new Move (a,b,a-1,b+1));}
 						catch (IndexOutOfBoundsException e) {}
 					} //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 					if (board[a][b] == -1 && !turn) { // Checking pawn moves (black)------------------------------------------------------------------------------------------------------------------------
@@ -44,9 +43,9 @@ public class Move {
 							if (board[a][b-1] == 0)
 								legalMoves.add(new Move (a,b,a,b-1));
 						}
-						try { if (board[a+1][b-1] > 0)legalMoves.add(new Move (a,b,a+1,b-1,true));}
+						try { if (board[a+1][b-1] > 0)legalMoves.add(new Move (a,b,a+1,b-1));}
 						catch (IndexOutOfBoundsException e) {}
-						try { if (board[a-1][b-1] > 0)legalMoves.add(new Move (a,b,a-1,b-1,true));}
+						try { if (board[a-1][b-1] > 0)legalMoves.add(new Move (a,b,a-1,b-1));}
 						catch (IndexOutOfBoundsException e) {}
 					} //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 					else if (Math.abs(board[a][b]) == 2) { // Checking knight moves-------------------------------------------------------------------------------------------------------------------------
@@ -437,13 +436,13 @@ public class Move {
 								catch (IndexOutOfBoundsException e) {}
 							}
 						}
-						if (Chess.whiteCastleKing && board[5][b] == 0 && board[6][b] == 0 && turn)
+						if (Chess.wCastleKing && board[5][b] == 0 && board[6][b] == 0 && turn)
 							legalMoves.add(new Move (a,b,6,b));
-						if (Chess.whiteCastleQueen && board[3][b] == 0 && board[2][b] == 0 && board[1][b] == 0 && turn)
+						if (Chess.wCastleQueen && board[3][b] == 0 && board[2][b] == 0 && board[1][b] == 0 && turn)
 							legalMoves.add(new Move (a,b,2,b));
-						if (Chess.blackCastleKing && board[5][b] == 0 && board[6][b] == 0 && !turn)
+						if (Chess.bCastleKing && board[5][b] == 0 && board[6][b] == 0 && !turn)
 							legalMoves.add(new Move (a,b,6,b));
-						if (Chess.blackCastleQueen && board[3][b] == 0 && board[2][b] == 0 && board[1][b] == 0 && !turn)
+						if (Chess.bCastleQueen && board[3][b] == 0 && board[2][b] == 0 && board[1][b] == 0 && !turn)
 							legalMoves.add(new Move (a,b,2,b));
 					}
 				}
@@ -460,16 +459,6 @@ public class Move {
 		piece = Chess.board[sx][sy];
 		moveName = getMoveName();
 	}
-	
-	public Move (int sx, int sy, int ex, int ey, boolean cap) {
-		startX = sx;
-		startY = sy;
-		endX = ex;
-		endY = ey;
-		piece = Chess.board[sx][sy];
-		moveName = getMoveName();
-		pawnCapture = cap;
-	}
 
 	public String getMoveName () {
 		if (Math.abs(Chess.board[startX][startY]) == 6 && endX == 6)
@@ -479,7 +468,7 @@ public class Move {
 		char xval = (char) (97 + endX);
 		String piece;
 		String cap = "";
-		if (Chess.board[endX][endY] != 0) {
+		if (this.pieceCaptured != 0) {
 			cap = "x";
 			if (Math.abs(Chess.board[startX][startY]) == 1)
 				cap = (char) (97 + startX) + cap;
